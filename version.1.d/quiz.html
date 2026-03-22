@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圆几何测验 - GCSE</title>
+    <style>
+        :root {
+            --primary-color: #2563eb; 
+            --success-color: #f97316;
+            --error-color: #ef4444;
+            --text-color: #333; 
+            --border-color: rgba(0,0,0,0.1); 
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-size-lg: 18px;
+            --border-radius: 12px; 
+            --shadow: 0 2px 8px rgba(0,0,0,0.08); 
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        body {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            color: var(--text-color);
+            font-size: var(--font-size-md);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9em;
+            box-shadow: var(--shadow);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-select {
+            padding: 4px 10px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9em;
+            min-width: 80px;
+        }
+
+        .quiz-container {
+            background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .quiz-container h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .quiz-mode {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+        }
+
+        .topic-select {
+            padding: 8px 16px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+        }
+
+        .question-card {
+            margin-top: 20px;
+        }
+
+        .question-title {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        .question-counter {
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            color: #64748b;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            padding: 12px 16px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+        }
+
+        .option-item:hover {
+            background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+        }
+
+        .option-item.selected {
+            border: 2px solid var(--primary-color);
+            background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+        }
+
+        .feedback-area {
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .feedback-success {
+            background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .feedback-error {
+            background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #64748b;
+            font-size: 0.9em;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-left {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .control-group {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .quiz-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <nav class="breadcrumb">
+                <a href="index.html">首页</a> &gt; 
+                <span id="breadcrumb-text">圆几何测验</span>
+            </nav>
+            <button id="wrong-book-btn" class="btn btn-primary">错题本</button>
+        </div>
+        
+        <div class="control-group">
+            <div class="control-item">
+                <label id="font-label" for="font-select">字体大小：</label>
+                <select id="font-select" class="control-select">
+                    <option value="sm">小</option>
+                    <option value="md" selected>中</option>
+                    <option value="lg">大</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label id="lang-label" for="lang-select">语言：</label>
+                <select id="lang-select" class="control-select">
+                    <option value="zh" selected>中文</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main class="quiz-container">
+        <h1 id="quiz-title">圆几何测验（GCSE水平）</h1>
+        
+        <div class="quiz-mode">
+            <button id="random-mode" class="mode-btn active">随机刷题</button>
+            <button id="topic-mode" class="mode-btn">按考点刷题</button>
+            <select id="topic-select" class="topic-select hidden">
+                <option value="all" id="topic-all">所有考点</option>
+                <option value="circumferential_angle" id="topic-angle">圆周角定理</option>
+                <option value="tangent_theorem" id="topic-tangent">切线定理</option>
+                <option value="chord_theorem" id="topic-chord">弦定理</option>
+            </select>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title">
+                <div class="question-counter" id="question-counter">第1题 / 共3题</div>
+                <p id="question-content">直径在圆周上所对的角的大小是多少？</p>
+            </div>
+            <div id="options-container" class="options-container">
+                <div class="option-item" data-index="0">30°</div>
+                <div class="option-item" data-index="1">60°</div>
+                <div class="option-item" data-index="2">90°</div>
+                <div class="option-item" data-index="3">180°</div>
+            </div>
+            <button id="submit-answer" class="btn btn-primary">提交答案</button>
+            <div id="feedback-area" class="feedback-area"></div>
+            <button id="next-question" class="btn hidden">下一题</button>
+        </div>
+    </main>
+
+    <footer>
+        <p id="footer-text">EBU5315 交互式媒体设计 | GCSE 圆几何学习</p>
+    </footer>
+
+    <script>
+        const i18n = {
+            zh: {
+                home: "首页",
+                breadcrumb: "圆几何测验",
+                wrongBookBtn: "错题本",
+                fontLabel: "字体大小：",
+                fontSmall: "小",
+                fontMedium: "中",
+                fontLarge: "大",
+                langLabel: "语言：",
+                quizTitle: "圆几何测验（GCSE水平）",
+                randomMode: "随机刷题",
+                topicMode: "按考点刷题",
+                topicAll: "所有考点",
+                topicAngle: "圆周角定理",
+                topicTangent: "切线定理",
+                topicChord: "弦定理",
+                submitBtn: "提交答案",
+                nextBtn: "下一题",
+                footer: "EBU5315 交互式媒体设计 | GCSE 圆几何学习",
+                selectOptionTip: "请选择一个选项！",
+                quizCompleted: "测验完成！",
+                questionCounter: (current, total) => `第${current}题 / 共${total}题`,
+                questions: [
+                    {id:1,topic:"circumferential_angle",question:"直径在圆周上所对的角的大小是多少？",options:["30°","60°","90°","180°"],answer:2,feedback:"正确！直径所对的圆周角是直角（90°）。"},
+                    {id:2,topic:"tangent_theorem",question:"圆的切线与过切点的半径的夹角是多少？",options:["30°","60°","90°","180°"],answer:2,feedback:"正确！圆的切线垂直于过切点的半径，夹角为90°。"},
+                    {id:3,topic:"chord_theorem",question:"垂直于弦的直径会如何分割弦？",options:["平分弦","三等分弦","四等分弦","不分割"],answer:0,feedback:"正确！垂直于弦的直径平分弦且平分弦所对的两条弧。"}
+                ]
+            },
+            en: {
+                home: "Home",
+                breadcrumb: "Circle Geometry Quiz",
+                wrongBookBtn: "Wrong Answer Book",
+                fontLabel: "Font Size:",
+                fontSmall: "Small",
+                fontMedium: "Medium",
+                fontLarge: "Large",
+                langLabel: "Language:",
+                quizTitle: "Circle Geometry Quiz (GCSE Level)",
+                randomMode: "Random Questions",
+                topicMode: "By Topic",
+                topicAll: "All Topics",
+                topicAngle: "Circumferential Angle Theorem",
+                topicTangent: "Tangent Theorem",
+                topicChord: "Chord Theorem",
+                submitBtn: "Submit Answer",
+                nextBtn: "Next Question",
+                footer: "EBU5315 Interactive Media Design | GCSE Circle Geometry Learning",
+                selectOptionTip: "Please select an option!",
+                quizCompleted: "Quiz completed!",
+                questionCounter: (current, total) => `Question ${current} / ${total} Questions`,
+                questions: [
+                    {id:1,topic:"circumferential_angle",question:"What is the size of the angle subtended by a diameter on the circumference?",options:["30°","60°","90°","180°"],answer:2,feedback:"Correct! The angle subtended by a diameter is a right angle (90°)."},
+                    {id:2,topic:"tangent_theorem",question:"What is the angle between a tangent to a circle and the radius at the point of contact?",options:["30°","60°","90°","180°"],answer:2,feedback:"Correct! A tangent to a circle is perpendicular to the radius at the point of contact (90°)."},
+                    {id:3,topic:"chord_theorem",question:"How does a diameter perpendicular to a chord divide the chord?",options:["Bisects the chord","Trisects the chord","Quadrisects the chord","Does not divide"],answer:0,feedback:"Correct! A diameter perpendicular to a chord bisects the chord and the two arcs subtended by the chord."}
+                ]
+            }
+        };
+
+        let currentLang = 'zh';
+        let selectedOptionIndex = -1;
+        let currentQuestionIndex = 0;
+        let currentQuestions = i18n.zh.questions;
+        let isRandomMode = true;
+
+        document.getElementById('font-select').addEventListener('change', function() {
+            const fontSize = this.value;
+            document.body.style.fontSize = `var(--font-size-${fontSize})`;
+            localStorage.setItem('quizFontSize', fontSize);
+        });
+
+        function updateAllLang(lang) {
+            currentLang = lang;
+            document.querySelector('.breadcrumb a').textContent = i18n[lang].home;
+            document.getElementById('breadcrumb-text').textContent = i18n[lang].breadcrumb;
+            document.getElementById('wrong-book-btn').textContent = i18n[lang].wrongBookBtn;
+            document.getElementById('font-label').textContent = i18n[lang].fontLabel;
+            document.getElementById('lang-label').textContent = i18n[lang].langLabel;
+            document.getElementById('quiz-title').textContent = i18n[lang].quizTitle;
+            document.getElementById('random-mode').textContent = i18n[lang].randomMode;
+            document.getElementById('topic-mode').textContent = i18n[lang].topicMode;
+            document.getElementById('topic-all').textContent = i18n[lang].topicAll;
+            document.getElementById('topic-angle').textContent = i18n[lang].topicAngle;
+            document.getElementById('topic-tangent').textContent = i18n[lang].topicTangent;
+            document.getElementById('topic-chord').textContent = i18n[lang].topicChord;
+            document.getElementById('submit-answer').textContent = i18n[lang].submitBtn;
+            document.getElementById('next-question').textContent = i18n[lang].nextBtn;
+            document.getElementById('footer-text').textContent = i18n[lang].footer;
+
+            // 修复：字体大小选项双语切换
+            const fontOpts = document.querySelectorAll('#font-select option');
+            fontOpts[0].textContent = i18n[lang].fontSmall;
+            fontOpts[1].textContent = i18n[lang].fontMedium;
+            fontOpts[2].textContent = i18n[lang].fontLarge;
+
+            currentQuestions = i18n[lang].questions;
+            updateQuestionCounter();
+            renderCurrentQuestion();
+            resetQuestionState();
+            localStorage.setItem('quizLang', lang);
+        }
+
+        document.getElementById('lang-select').addEventListener('change', function() {
+            updateAllLang(this.value);
+        });
+
+        function updateQuestionCounter() {
+            const counterText = i18n[currentLang].questionCounter(currentQuestionIndex + 1, currentQuestions.length);
+            document.getElementById('question-counter').textContent = counterText;
+        }
+
+        function renderCurrentQuestion() {
+            if (currentQuestionIndex >= currentQuestions.length) {
+                document.getElementById('question-content').textContent = i18n[currentLang].quizCompleted;
+                document.getElementById('options-container').style.display = 'none';
+                return;
+            }
+            const question = currentQuestions[currentQuestionIndex];
+            document.getElementById('question-content').textContent = question.question;
+            const optionItems = document.querySelectorAll('.option-item');
+            optionItems.forEach((item, idx) => {
+                idx < question.options.length ? (item.textContent = question.options[idx], item.style.display = 'block') : (item.style.display = 'none');
+            });
+            updateQuestionCounter();
+        }
+
+        function resetQuestionState() {
+            selectedOptionIndex = -1;
+            document.querySelectorAll('.option-item').forEach(item => item.classList.remove('selected'));
+            document.getElementById('feedback-area').style.display = 'none';
+            document.getElementById('submit-answer').disabled = false;
+            document.getElementById('next-question').classList.add('hidden');
+            document.getElementById('options-container').style.display = 'flex';
+        }
+
+        document.getElementById('random-mode').addEventListener('click', function() {
+            document.getElementById('random-mode').classList.add('active');
+            document.getElementById('topic-mode').classList.remove('active');
+            document.getElementById('topic-select').classList.add('hidden');
+            isRandomMode = true;
+            currentQuestions = shuffleArray([...i18n[currentLang].questions]);
+            currentQuestionIndex = 0;
+            renderCurrentQuestion();
+            resetQuestionState();
+        });
+
+        document.getElementById('topic-mode').addEventListener('click', function() {
+            document.getElementById('random-mode').classList.remove('active');
+            document.getElementById('topic-mode').classList.add('active');
+            document.getElementById('topic-select').classList.remove('hidden');
+            isRandomMode = false;
+            filterQuestionsByTopic(document.getElementById('topic-select').value);
+            currentQuestionIndex = 0;
+            renderCurrentQuestion();
+            resetQuestionState();
+        });
+
+        document.getElementById('topic-select').addEventListener('change', function() {
+            filterQuestionsByTopic(this.value);
+            currentQuestionIndex = 0;
+            renderCurrentQuestion();
+            resetQuestionState();
+        });
+
+        function filterQuestionsByTopic(topic) {
+            currentQuestions = topic === 'all' ? [...i18n[currentLang].questions] : i18n[currentLang].questions.filter(q => q.topic === topic);
+        }
+
+        document.querySelectorAll('.option-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedOptionIndex = parseInt(this.dataset.index);
+            });
+        });
+
+        document.getElementById('submit-answer').addEventListener('click', function() {
+            if (selectedOptionIndex === -1) {
+                const fb = document.getElementById('feedback-area');
+                fb.textContent = i18n[currentLang].selectOptionTip;
+                fb.className = 'feedback-area feedback-error';
+                fb.style.display = 'block';
+                return;
+            }
+            const q = currentQuestions[currentQuestionIndex];
+            const fb = document.getElementById('feedback-area');
+            if (selectedOptionIndex === q.answer) {
+                fb.textContent = q.feedback;
+                fb.className = 'feedback-area feedback-success';
+            } else {
+                saveWrongQuestion(q, selectedOptionIndex);
+                const tip = currentLang === 'zh' ? `错误！正确答案是${q.options[q.answer]}。` : `Incorrect! The correct answer is ${q.options[q.answer]}.`;
+                fb.textContent = tip + ' ' + q.feedback;
+                fb.className = 'feedback-area feedback-error';
+            }
+            fb.style.display = 'block';
+            this.disabled = true;
+            document.getElementById('next-question').classList.remove('hidden');
+        });
+
+        function saveWrongQuestion(q, userAns) {
+            let wrong = JSON.parse(localStorage.getItem('quizWrongQuestions')||'[]');
+            if(!wrong.some(w=>w.id===q.id&&w.lang===currentLang)){
+                wrong.push({id:q.id,lang:currentLang,zh:i18n.zh.questions.find(x=>x.id===q.id),en:i18n.en.questions.find(x=>x.id===q.id),userAnswer:userAns});
+                localStorage.setItem('quizWrongQuestions',JSON.stringify(wrong));
+            }
+        }
+
+        document.getElementById('next-question').addEventListener('click', function() {
+            currentQuestionIndex++;
+            renderCurrentQuestion();
+            resetQuestionState();
+        });
+
+        document.getElementById('wrong-book-btn').addEventListener('click', function() {
+            window.location.href = 'quiz-wrong.html';
+        });
+
+        function shuffleArray(arr){return arr.sort(()=>Math.random()-0.5);}
+
+        window.onload = function() {
+            const f = localStorage.getItem('quizFontSize');
+            if(f){document.getElementById('font-select').value=f;document.body.style.fontSize=`var(--font-size-${f})`;}
+            const l = localStorage.getItem('quizLang');
+            if(l){document.getElementById('lang-select').value=l;updateAllLang(l);}else{renderCurrentQuestion();}
+        };
+    </script>
+</body>
+</html>

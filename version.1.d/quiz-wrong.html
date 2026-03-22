@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错题本 - 圆几何测验</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #f97316;
+            --error-color: #ef4444;
+            --text-color: #333;
+            --border-color: rgba(0,0,0,0.1);
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-size-lg: 18px;
+            --border-radius: 12px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        body {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            color: var(--text-color);
+            font-size: var(--font-size-md);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9em;
+            box-shadow: var(--shadow);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: none;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-select {
+            padding: 4px 10px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9em;
+            min-width: 80px;
+        }
+
+        .wrong-book-container {
+            background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .wrong-book-container h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .wrong-book-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .wrong-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .wrong-card {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .wrong-card .delete-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: var(--error-color);
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        .wrong-card .delete-btn:hover {
+            color: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .wrong-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .wrong-card .option-group {
+            margin: 12px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .wrong-card .option {
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            font-size: 0.95em;
+        }
+
+        .wrong-card .option.user-answer {
+            background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%);
+            border: 1px solid var(--error-color);
+        }
+
+        .wrong-card .option.correct-answer {
+            background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
+            border: 1px solid var(--success-color);
+        }
+
+        .wrong-card .feedback {
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+            border-radius: var(--border-radius);
+            color: var(--primary-color);
+            font-size: 0.95em;
+        }
+
+        .empty-tip {
+            text-align: center;
+            padding: 50px 0;
+            color: #64748b;
+            font-size: 1.1em;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: var(--border-radius);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #64748b;
+            font-size: 0.9em;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-left {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .control-group {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .wrong-book-container {
+                padding: 20px;
+            }
+
+            .wrong-card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <nav class="breadcrumb">
+                <a href="index.html">首页</a> &gt; 
+                <span id="breadcrumb-text">错题本</span>
+            </nav>
+            <button id="back-btn" class="btn btn-primary">返回测验</button>
+        </div>
+        
+        <div class="control-group">
+            <div class="control-item">
+                <label id="font-label" for="font-select">字体大小：</label>
+                <select id="font-select" class="control-select">
+                    <option value="sm">小</option>
+                    <option value="md" selected>中</option>
+                    <option value="lg">大</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label id="lang-label" for="lang-select">语言：</label>
+                <select id="lang-select" class="control-select">
+                    <option value="zh" selected>中文</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main class="wrong-book-container">
+        <h1 id="wrong-title">圆几何测验 - 错题本</h1>
+        
+        <div class="wrong-book-actions">
+            <button id="clear-all-btn" class="btn btn-danger">清空所有错题</button>
+        </div>
+        
+        <div id="wrong-list" class="wrong-list"></div>
+        <div id="empty-tip" class="empty-tip hidden">暂无错题，继续刷题积累吧！</div>
+    </main>
+
+    <footer>
+        <p id="footer-text">EBU5315 交互式媒体设计 | GCSE 圆几何学习</p>
+    </footer>
+
+    <script>
+        const i18n = {
+            zh: {
+                home: "首页",
+                breadcrumb: "错题本",
+                backBtn: "返回测验",
+                fontLabel: "字体大小：",
+                fontSmall: "小",
+                fontMedium: "中",
+                fontLarge: "大",
+                langLabel: "语言：",
+                wrongTitle: "圆几何测验 - 错题本",
+                clearAllBtn: "清空所有错题",
+                emptyTip: "暂无错题，继续刷题积累吧！",
+                wrongNumPrefix: "错题",
+                yourAnswer: "你的答案：",
+                correctAnswer: "正确答案：",
+                feedback: "解析：",
+                deleteConfirm: "确定要删除这道错题吗？",
+                clearConfirm: "确定要清空所有错题吗？此操作不可恢复！",
+                footer: "EBU5315 交互式媒体设计 | GCSE 圆几何学习"
+            },
+            en: {
+                home: "Home",
+                breadcrumb: "Wrong Answer Book",
+                backBtn: "Back to Quiz",
+                fontLabel: "Font Size:",
+                fontSmall: "Small",
+                fontMedium: "Medium",
+                fontLarge: "Large",
+                langLabel: "Language:",
+                wrongTitle: "Circle Geometry Quiz - Wrong Answer Book",
+                clearAllBtn: "Clear All Wrong Answers",
+                emptyTip: "No wrong answers yet, keep practicing!",
+                wrongNumPrefix: "Wrong Answer",
+                yourAnswer: "Your Answer:",
+                correctAnswer: "Correct Answer:",
+                feedback: "Explanation:",
+                deleteConfirm: "Are you sure to delete this wrong answer?",
+                clearConfirm: "Are you sure to clear all wrong answers? This action cannot be undone!",
+                footer: "EBU5315 Interactive Media Design | GCSE Circle Geometry Learning"
+            }
+        };
+
+        let currentLang = 'zh';
+        let wrongQuestions = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadWrongQuestions();
+            initFontControl();
+            initLangControl();
+            initBackBtn();
+            initClearAllBtn();
+            renderWrongList();
+        });
+
+        function loadWrongQuestions() {
+            wrongQuestions = JSON.parse(localStorage.getItem('quizWrongQuestions')||'[]');
+        }
+
+        function initFontControl() {
+            const fs = document.getElementById('font-select');
+            fs.addEventListener('change', function(){
+                document.body.style.fontSize=`var(--font-size-${this.value})`;
+                localStorage.setItem('quizFontSize',this.value);
+            });
+            const f = localStorage.getItem('quizFontSize');
+            if(f){fs.value=f;document.body.style.fontSize=`var(--font-size-${f})`;}
+        }
+
+        function initLangControl() {
+            const ls = document.getElementById('lang-select');
+            function updateLang(lang){
+                currentLang = lang;
+                document.querySelector('.breadcrumb a').textContent = i18n[lang].home;
+                document.getElementById('breadcrumb-text').textContent = i18n[lang].breadcrumb;
+                document.getElementById('back-btn').textContent = i18n[lang].backBtn;
+                document.getElementById('font-label').textContent = i18n[lang].fontLabel;
+                document.getElementById('lang-label').textContent = i18n[lang].langLabel;
+                document.getElementById('wrong-title').textContent = i18n[lang].wrongTitle;
+                document.getElementById('clear-all-btn').textContent = i18n[lang].clearAllBtn;
+                document.getElementById('empty-tip').textContent = i18n[lang].emptyTip;
+                document.getElementById('footer-text').textContent = i18n[lang].footer;
+
+                // 修复：错题本字体选项双语切换
+                const fontOpts = document.querySelectorAll('#font-select option');
+                fontOpts[0].textContent = i18n[lang].fontSmall;
+                fontOpts[1].textContent = i18n[lang].fontMedium;
+                fontOpts[2].textContent = i18n[lang].fontLarge;
+
+                localStorage.setItem('quizLang',lang);
+                renderWrongList();
+            }
+            ls.addEventListener('change',()=>updateLang(ls.value));
+            const l = localStorage.getItem('quizLang');
+            if(l){ls.value=l;updateLang(l);}
+        }
+
+        function initBackBtn() {
+            document.getElementById('back-btn').addEventListener('click',()=>window.location.href='quiz.html');
+        }
+
+        function initClearAllBtn() {
+            document.getElementById('clear-all-btn').addEventListener('click',()=>{
+                if(confirm(i18n[currentLang].clearConfirm)){
+                    localStorage.removeItem('quizWrongQuestions');
+                    wrongQuestions=[];
+                    renderWrongList();
+                }
+            });
+        }
+
+        function deleteWrongQuestion(id) {
+            if(confirm(i18n[currentLang].deleteConfirm)){
+                wrongQuestions=wrongQuestions.filter(q=>q.id!==id);
+                localStorage.setItem('quizWrongQuestions',JSON.stringify(wrongQuestions));
+                renderWrongList();
+            }
+        }
+
+        function renderWrongList() {
+            const list = document.getElementById('wrong-list');
+            const empty = document.getElementById('empty-tip');
+            list.innerHTML='';
+            if(wrongQuestions.length===0){list.classList.add('hidden');empty.classList.remove('hidden');return;}
+            list.classList.remove('hidden');empty.classList.add('hidden');
+            wrongQuestions.forEach((q,i)=>{
+                const d = q[currentLang];
+                const card = document.createElement('div');
+                card.className='wrong-card';
+                card.innerHTML=`
+                    <button class="delete-btn" data-id="${q.id}">×</button>
+                    <h3>${i18n[currentLang].wrongNumPrefix} ${i+1}</h3>
+                    <p>${d.question}</p>
+                    <div class="option-group">
+                        <div class="option user-answer">${i18n[currentLang].yourAnswer}${d.options[q.userAnswer]}</div>
+                        <div class="option correct-answer">${i18n[currentLang].correctAnswer}${d.options[d.answer]}</div>
+                    </div>
+                    <div class="feedback">${i18n[currentLang].feedback}${d.feedback}</div>
+                `;
+                card.querySelector('.delete-btn').addEventListener('click',function(){
+                    deleteWrongQuestion(parseInt(this.dataset.id));
+                });
+                list.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
