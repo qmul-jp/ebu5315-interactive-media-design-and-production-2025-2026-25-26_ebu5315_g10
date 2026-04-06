@@ -1,958 +1,774 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>圆几何台球 · 定理互动实验室 | 增强修复版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Circular_Billards</title>
     <style>
         * {
             box-sizing: border-box;
-            user-select: none;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
         }
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-            transition: background 0.2s, color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #1a3b2f; /* 深色背景默认，但由主题控制 */
         }
-        body.light-mode { background: #e8f0e8; color: #1e2a1e; }
-        body.dark-mode { background: #121212; color: #e0e0e0; }
-        
+        body.dark-mode {
+            background-color: #1e1e2f;
+            color: #e0e0e0;
+        }
+        body.light-mode {
+            background-color: #eef5e9;
+            color: #222;
+        }
         .game-container {
-            max-width: 1300px;
+            width: 1000px;
+            max-width: 96vw;
             margin: 20px auto;
-            background: white;
+            background-color: white;
             border-radius: 32px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 20px;
-            transition: background 0.2s;
+            padding: 24px;
+        }
+        body.dark-mode .game-container {
+            background-color: #2a2a3a;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        body.light-mode .game-container {
+            background-color: #ffffff;
+        }
+        /* 面包屑导航 */
+        .breadcrumb {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        body.dark-mode .game-container { background: #2a2a2f; }
-        
-        .game-main {
-            flex: 3;
-            min-width: 280px;
-        }
-        .angle-history-panel {
-            flex: 1.2;
-            background: #f0f4f0;
-            border-radius: 28px;
-            padding: 16px;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        body.dark-mode .angle-history-panel { background: #3a3a3a; }
-        .history-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            border-bottom: 2px solid #ffaa33;
-            display: inline-block;
-        }
-        .history-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .history-list li {
-            font-family: monospace;
-            padding: 4px 0;
-            border-bottom: 1px solid #ccc;
-        }
-        .mobile-controls {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            flex-wrap: wrap;
             align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f5f7fa;
+            border-radius: 40px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
         }
-        .mobile-controls button {
-            padding: 5px 12px;
-            font-size: 1rem;
+        body.dark-mode .breadcrumb {
+            background: #3a3a4e;
         }
-        
+        body.light-mode .breadcrumb {
+            background: #f5f7fa;
+        }
+        .breadcrumb a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #0066cc;
+            gap: 4px;
+        }
+        body.dark-mode .breadcrumb a {
+            color: #88c0ff;
+        }
+        .breadcrumb .home-icon {
+            font-size: 1.3rem;
+            line-height: 1;
+        }
+        .breadcrumb span {
+            color: #888;
+        }
+        /* 头部控制栏 */
         .header-bar {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-        .title h1 { margin: 0; font-size: 1.6rem; }
-        .title p { margin: 4px 0 0; opacity: 0.7; font-size: 0.8rem; }
-        .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-        button, .mode-btn {
+        .title h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        .title p {
+            margin: 4px 0 0;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        .lang-theme {
+            display: flex;
+            gap: 12px;
+        }
+        button {
             background: #eef2f6;
             border: none;
-            padding: 6px 14px;
+            padding: 10px 20px;
             border-radius: 40px;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 0.8rem;
+            gap: 8px;
+            border: 1px solid transparent;
+            transition: 0.1s;
         }
-        body.dark-mode button { background: #444; color: white; }
-        .mode-active { background: #ffaa33; color: #2c2c2c; }
+        body.dark-mode button {
+            background: #3e3e56;
+            color: #f0f0f0;
+            border-color: #555;
+        }
+        body.light-mode button {
+            background: #eef2f6;
+            color: #111;
+        }
+        button:hover {
+            background: #d9e2ec;
+        }
+        body.dark-mode button:hover {
+            background: #52527a;
+        }
+        /* 画布区域 */
         .canvas-wrapper {
             position: relative;
-            margin: 10px 0;
-            border-radius: 20px;
+            margin: 20px 0;
+            border-radius: 24px;
             overflow: hidden;
             border: 2px solid #2e8b57;
             background: #1e4d2b;
         }
-        canvas { display: block; width: 100%; height: auto; cursor: crosshair; touch-action: none; }
-        .info-panel {
+        body.dark-mode .canvas-wrapper {
+            border-color: #555;
+            background: #1a1a2a;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            cursor: crosshair;
+            touch-action: none; /* 防止触摸滚动 */
+        }
+        /* 状态面板 */
+        .stats-panel {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 24px;
             justify-content: space-between;
-            background: #f8faff;
-            padding: 10px 18px;
-            border-radius: 48px;
-            margin: 12px 0;
-        }
-        body.dark-mode .info-panel { background: #3a3a4a; }
-        .score-area { font-size: 1.4rem; font-weight: bold; }
-        .control-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .geom-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-        footer { text-align: center; font-size: 0.7rem; margin-top: 20px; opacity: 0.6; }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 2000;
-            justify-content: center;
             align-items: center;
+            background: #f8faff;
+            padding: 16px 24px;
+            border-radius: 48px;
+            margin: 20px 0;
         }
-        .modal-content {
-            background: #fff8e7;
-            border-radius: 32px;
-            max-width: 550px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            padding: 28px 24px;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+        body.dark-mode .stats-panel {
+            background: #323248;
         }
-        body.dark-mode .modal-content {
-            background: #2a2a2f;
-            color: #f0f0f0;
-            border: 1px solid #ffaa33;
+        .score-box {
+            background: white;
+            padding: 8px 22px;
+            border-radius: 40px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+            font-size: 1.8rem;
+            font-weight: 700;
         }
-        .modal-content h2 { text-align: center; font-size: 2rem; margin-top: 0; border-bottom: 3px solid #ffaa33; display: inline-block; width: 100%; }
-        .rule-section { font-size: 1.2rem; line-height: 1.5; margin: 20px 0; }
-        .rule-section strong { color: #d9534f; font-size: 1.3rem; }
-        .close-modal-btn { display: block; margin: 20px auto 0; background: #ffaa33; border: none; padding: 10px 24px; border-radius: 40px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-        @media (max-width: 800px) {
-            .game-container { flex-direction: column; }
+        body.dark-mode .score-box {
+            background: #44445c;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .reset-btn {
+            background: #b45f2e;
+            color: white;
+            padding: 12px 36px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .reset-btn:hover {
+            background: #8f4b23;
+        }
+        /* 广告位 (盈利机制模拟) */
+        .ad-banner {
+            background: linear-gradient(145deg, #f1dbb4, #ecd79b);
+            color: #5e4a2b;
+            text-align: center;
+            padding: 18px;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            border: 2px dashed #b38b40;
+            margin: 20px 0 10px;
+        }
+        body.dark-mode .ad-banner {
+            background: #4f4a3a;
+            color: #ffe6a6;
+            border-color: #a67c2e;
+        }
+        .ad-banner span {
+            background: #fff2d0;
+            padding: 4px 16px;
+            border-radius: 60px;
+            margin-left: 12px;
+        }
+        /* 提示信息 */
+        .info-tip {
+            background: #e7f0ff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            margin-top: 16px;
+        }
+        body.dark-mode .info-tip {
+            background: #394759;
+        }
+        footer {
+            text-align: center;
+            opacity: 0.6;
+            font-size: 0.8rem;
+            margin-top: 24px;
+        }
+        /* 移动端调整 */
+        @media (max-width: 700px) {
+            .header-bar {
+                flex-direction: column;
+                align-items: start;
+                gap: 12px;
+            }
+            .stats-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 </head>
 <body class="light-mode">
-<div class="game-container">
-    <div class="game-main">
-        <div class="header-bar">
-            <div class="title">
-                <h1 id="mainTitle">📐 圆几何台球 · 定理互动实验室</h1>
-                <p id="subtitle">反射定律 | 圆周角 | 垂径定理 | 切线性质 | 智能轨迹预测</p>
-            </div>
-            <div class="toolbar">
-                <button id="langBtn">🌐 中文/EN</button>
-                <button id="themeBtn">🌙 深色</button>
-                <button id="rulesBtn">📜 游戏规则</button>
-                <button id="undoBtn">↩️ 撤销</button>
-            </div>
-        </div>
-
-        <div class="canvas-wrapper">
-            <canvas id="gameCanvas" width="1000" height="550"></canvas>
-        </div>
-
-        <div class="info-panel">
-            <div class="score-area">⭐ <span id="scoreValue">0</span> &nbsp;| 🎯 <span id="challengeName">自由模式</span></div>
-            <div class="control-group">
-                <span id="modeLabel">🎮 游戏模式:</span>
-                <button id="modeFree" class="mode-btn mode-active">自由</button>
-                <button id="modeReflect1" class="mode-btn">反射1次</button>
-                <button id="modeReflect2" class="mode-btn">反射2次</button>
-                <button id="modeTangent" class="mode-btn">切线狙击</button>
-                <button id="modeAngle" class="mode-btn">圆周角探索</button>
-                <button id="modeChord" class="mode-btn">垂径定理</button>
-            </div>
-            <div class="control-group">
-                <span id="speedLabel">🐢 动画速度:</span>
-                <input type="range" id="speedSlider" min="0.4" max="1.2" step="0.01" value="1.0" style="width:100px">
-                <span id="speedVal">1.0x</span>
-                <span id="powerLabel">🎯 力度:</span>
-                <input type="range" id="powerSlider" min="0" max="100" value="0" style="width:100px">
-                <span id="powerVal">0%</span>
-            </div>
-        </div>
-
-        <div class="geom-tools">
-            <label><input type="checkbox" id="showGrid" checked> <span id="gridLabel">极坐标网格</span></label>
-            <label><input type="checkbox" id="showRuler" checked> <span id="rulerLabel">几何标尺(距离/角度)</span></label>
-            <label><input type="checkbox" id="showTangentHelper" checked> <span id="tangentLabel">常驻切线/法线参考</span></label>
-            <label><input type="checkbox" id="showPredict" checked> <span id="predictLabel">轨迹预测(含反射)</span></label>
-            <label><input type="checkbox" id="showChordVisual" checked> <span id="chordVisualLabel">显示动态弦(过白球)</span></label>
-            <button id="resetBtn">🔄 <span id="resetText">重置球局</span></button>
-            <button id="helpBtn">❓ <span id="helpText">定理提示</span></button>
-        </div>
-        <div class="mobile-controls" id="mobileControls">
-            <span>📱 辅助方向:</span>
-            <button id="dirUp">↑</button><button id="dirLeft">←</button><button id="dirRight">→</button><button id="dirDown">↓</button>
-            <button id="dirShoot" style="background:#ffaa33;">击球</button>
-            <span id="dirPowerHint">力度:0%</span>
-        </div>
-        <footer id="footerText">✨ 点击白球拖拽瞄准 → 释放击球 | 碰撞时显示入射/反射角、半径⊥切线 | 不同模式解锁几何定理</footer>
+<div class="game-container" id="gameContainer">
+    <!-- 面包屑导航 + 主页图标 -->
+    <div class="breadcrumb">
+        <a href="index.html" id="homeLink"><span class="home-icon">🏠</span> 主页</a>
+        <span>›</span>
+        <span data-i18n="gamePage">台球集合</span>
     </div>
 
-    <div class="angle-history-panel">
-        <div class="history-title" id="historyTitle">📊 最近碰撞角度</div>
-        <ul class="history-list" id="angleHistoryList">
-            <li>— 暂无碰撞 —</li>
-        </ul>
-        <div style="margin-top: 12px; font-size:0.8rem;" id="modeSpecificInfo"></div>
+    <!-- 标题和语言/主题切换 -->
+    <div class="header-bar">
+        <div class="title">
+            <h1 data-i18n="gameTitle">🎱 台球集合 · 圆的反射</h1>
+            <p data-i18n="subtitle">拖拽白球设定力度与方向，反弹击中红球。观察法线垂直于切线。</p>
+        </div>
+        <div class="lang-theme">
+            <button id="langToggle" title="切换语言">🌐 <span id="langLabel">中文</span></button>
+            <button id="themeToggle" title="深色/浅色">🌙 <span id="themeLabel">深色</span></button>
+        </div>
     </div>
-</div>
 
-<!-- 规则模态框 -->
-<div id="rulesModal" class="modal">
-    <div class="modal-content">
-        <h2 id="rulesModalTitle">📜 游戏规则</h2>
-        <div id="rulesModalContent" class="rule-section"></div>
-        <button class="close-modal-btn" id="closeRulesBtn">关闭</button>
+    <!-- Canvas 绘图区 -->
+    <div class="canvas-wrapper">
+        <canvas id="gameCanvas" width="900" height="500"></canvas>
     </div>
+
+    <!-- 统计和操作区 -->
+    <div class="stats-panel">
+        <div class="score-box">
+            ⭐ <span id="scoreDisplay">0</span>
+        </div>
+        <div class="action-buttons">
+            <button class="reset-btn" id="resetBtn" data-i18n="reset">🔄 新一局</button>
+        </div>
+    </div>
+
+    <!-- 广告横幅 (盈利机制) -->
+    <div class="ad-banner">
+        🎯 精准几何台球 · 职业选手都在用 <span>🏆 立即体验</span>
+    </div>
+
+    <!-- 提示 / AI 占位 (可选AI特性) -->
+    <div class="info-tip" id="aiTip">
+        💬 AI 教练: 点击白球并拖拽来瞄准，释放击球。击中红球得分。
+    </div>
+
+    <footer>
+        <span data-i18n="footer">v1.0 · 反射定律 · 半径垂直于切线</span>
+    </footer>
 </div>
 
 <script>
-    (function(){
-        // ---------- 画布与物理参数 ----------
+    (function() {
+        // --- 配置参数 ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const width = canvas.width, height = canvas.height;
+
+        // 圆形边界 (台球桌)
         const center = { x: width/2, y: height/2 };
-        const R = Math.min(width, height) * 0.4;
-        const circle = { x: center.x, y: center.y, r: R };
-        const ballR = 10;
-        let whiteBall = { x: circle.x, y: circle.y - 70, vx: 0, vy: 0 };
-        let targetBall = { x: circle.x + 60, y: circle.y + 40, r: 9 };
-        
+        const tableRadius = Math.min(width, height) * 0.4; // 比边界小一点，留出空间
+        // 实际圆心位置稍作调整，让圆在画布中视觉居中
+        const circle = {
+            x: center.x,
+            y: center.y,
+            r: tableRadius
+        };
+
+        // 球参数
+        const ballRadius = 12;
+        let whiteBall = { x: circle.x, y: circle.y - 100, vx: 0, vy: 0 }; // 初始位置
+        let targetBall = { x: circle.x + 80, y: circle.y + 60, r: 10 }; // 目标球，稍小
+
         // 游戏状态
         let score = 0;
-        let isAiming = false;
-        let aimEnd = { x: 0, y: 0 };
-        let isMoving = false;
-        let friction = 0.985;
+        let isAiming = false;        // 是否正在拖拽瞄准
+        let aimStart = { x: 0, y: 0 }; // 拖拽起点 (白球位置)
+        let aimEnd = { x: 0, y: 0 };   // 当前鼠标位置
+        let aimVector = { dx: 0, dy: 0 }; // 瞄准向量
+        const maxPower = 15;          // 最大速度
+
+        // 动画循环控制
         let animFrame = null;
-        let speedFactor = 1.0;
-        let currentMode = 'free';   
-        let currentCollisions = 0;
-        let lastCollisionFrame = false;
-        
-        // 历史记录
-        let historyStack = [];
-        
-        // 几何特效
-        let collisionEffect = { active: false, point: null, normal: null, tangent: null, timer: 0, incAngle: 0, refAngle: 0 };
-        let lastCollisionGeom = null;
-        
-        // 角度历史 (最多5条)
-        let angleHistory = [];
-        
-        // 圆周角模式专用数据
-        let angleModePoints = { A: null, B: null };   // 固定点A,B 在圆上
-        let lastAngleHitInfo = null;
-        
-        // 垂径模式专用: 随机生成一条弦
-        let chordForMode = null; // { p1, p2, mid, slope }
-        
-        // UI 开关状态
-        let showGrid = true;
-        let showRuler = true;
-        let showTangentHelper = true;
-        let showPredict = true;
-        let showChordVisual = true;
-        
-        // 移动端辅助方向
-        let dirAngle = 0;   // 弧度
-        let dirPower = 0;
-        
-        // 多语言
-        let lang = 'zh';
+        let isMoving = false;         // 球是否在运动
+        const friction = 0.99;         // 简单摩擦减速（可选）
+
+        // 碰撞几何显示
+        let collisionFlash = { active: false, point: null, normal: null, tangent: null, timer: 0 };
+
+        // 语言与主题
+        let currentLang = 'zh';        // 'en' 或 'zh'
+        let isDark = false;            // 默认浅色模式，由类控制
+
+        // 语言包
         const i18n = {
-            zh: {
-                mainTitle: "📐 圆几何台球 · 定理互动实验室",
-                subtitle: "反射定律 | 圆周角 | 垂径定理 | 切线性质 | 智能轨迹预测",
-                modeLabel: "🎮 游戏模式:",
-                speedLabel: "🐢 动画速度:",
-                powerLabel: "🎯 力度:",
-                gridLabel: "极坐标网格",
-                rulerLabel: "几何标尺(距离/角度)",
-                tangentLabel: "常驻切线/法线参考",
-                predictLabel: "轨迹预测(含反射)",
-                resetText: "重置球局",
-                helpText: "定理提示",
-                footer: "✨ 点击白球拖拽瞄准 → 释放击球 | 碰撞时显示入射/反射角、半径⊥切线 | 不同模式解锁几何定理",
-                rulesTitle: "📜 游戏规则",
-                free: "自由模式",
-                reflect1: "反射1次",
-                reflect2: "反射2次",
-                tangent: "切线狙击",
-                angle: "圆周角探索",
-                chord: "垂径定理",
-                ruleFree: "✨ 任意次数碰撞边界后击中红球即可得分。<br>📍 圆心距倍率：白球越靠近圆心，得分倍率越高（最高2.0倍）。",
-                ruleReflect1: "🔄 必须碰撞边界 <strong>1次</strong> 后再击中红球。",
-                ruleReflect2: "🔄 必须碰撞边界 <strong>2次</strong> 后再击中红球。",
-                ruleTangent: "✂️ 白球路径必须与红球相切（擦过），系统会提示“半径⊥切线”。",
-                ruleAngle: "📐 击中红球时，自动显示圆弧所对圆周角和圆心角，验证定理。",
-                ruleChord: "📏 白球路径需垂直平分一条弦（经过圆心）。",
-                powerHint: "💪 满力度击球可轻松实现2~3次反射。",
-                theme: "🌙 深色",
-                rules: "📜 游戏规则",
-                undo: "↩️ 撤销",
-                historyTitle: "📊 最近碰撞角度",
-                chordVisualLabel: "显示动态弦(过白球)",
-                modeAngleInfo: "圆周角模式: 固定两点(红色标记), 击中红球后显示圆周角/圆心角",
-                modeChordInfo: "垂径定理模式: 蓝色弦为目标, 白球路径需垂直平分该弦(经过圆心)",
-                angleRecord: "入射 {inc}° / 反射 {ref}°"
-            },
             en: {
-                mainTitle: "📐 Circle Geometry Billiards · Theorem Lab",
-                subtitle: "Reflection Law | Inscribed Angle | Chord Theorem | Tangent | Trajectory Prediction",
-                modeLabel: "🎮 Game Mode:",
-                speedLabel: "🐢 Animation Speed:",
-                powerLabel: "🎯 Power:",
-                gridLabel: "Polar Grid",
-                rulerLabel: "Ruler (Dist/Angle)",
-                tangentLabel: "Keep Last Normal/Tangent",
-                predictLabel: "Trajectory Prediction (w/ reflections)",
-                resetText: "Reset Game",
-                helpText: "Theorem Tips",
-                footer: "✨ Drag from white ball → release to shoot | Collision shows incident/reflection angle & Radius⊥Tangent | Modes unlock theorems",
-                rulesTitle: "📜 Game Rules",
-                free: "Free Mode",
-                reflect1: "1 Bounce",
-                reflect2: "2 Bounces",
-                tangent: "Tangent Sniper",
-                angle: "Inscribed Angle",
-                chord: "Perp. Bisector",
-                ruleFree: "✨ Hit red ball after any number of bounces.<br>📍 Distance multiplier: closer to center → higher score (up to 2.0x).",
-                ruleReflect1: "🔄 Must bounce exactly <strong>1 time</strong> before hitting red ball.",
-                ruleReflect2: "🔄 Must bounce exactly <strong>2 times</strong> before hitting red ball.",
-                ruleTangent: "✂️ White ball path must be tangent to red ball (grazing).",
-                ruleAngle: "📐 When hitting red ball, displays inscribed/central angle to verify theorem.",
-                ruleChord: "📏 White ball path must perpendicularly bisect a chord (pass through center).",
-                powerHint: "💪 Max power easily achieves 2-3 reflections.",
-                theme: "🌙 Dark",
-                rules: "📜 Rules",
-                undo: "↩️ Undo",
-                historyTitle: "📊 Recent Collision Angles",
-                chordVisualLabel: "Show dynamic chord (through white ball)",
-                modeAngleInfo: "Inscribed Angle Mode: Two fixed points (red marks). Hit red ball to see inscribed/central angle.",
-                modeChordInfo: "Perp. Bisector Mode: Blue chord target. White path must bisect it through center.",
-                angleRecord: "Inc {inc}° / Ref {ref}°"
+                gamePage: 'Billiard Geometry',
+                gameTitle: '🎱 Circular Billiards · Law of Reflection',
+                subtitle: 'Drag the white ball to set direction & power. Hit the red ball. Observe normal ⟂ tangent.',
+                reset: '🔄 New Game',
+                footer: 'v1.0 · Reflection law · Radius perpendicular to tangent',
+                aiMessage: '💬 AI Coach: Click and drag from the white ball to aim. Release to shoot. Hit the red ball.',
+                ad: '🎯 Precision Geometry Billiards · Used by Pros',
+            },
+            zh: {
+                gamePage: '台球集合',
+                gameTitle: '🎱 台球集合 · 圆的反射',
+                subtitle: '拖拽白球设定力度与方向，反弹击中红球。观察法线垂直于切线。',
+                reset: '🔄 新一局',
+                footer: 'v1.0 · 反射定律 · 半径垂直于切线',
+                aiMessage: '💬 AI 教练: 点击白球并拖拽来瞄准，释放击球。击中红球得分。',
+                ad: '🎯 精准几何台球 · 职业选手都在用',
             }
         };
-        
-        function updateLanguage(){
-            const t = i18n[lang];
-            document.getElementById('mainTitle').innerText = t.mainTitle;
-            document.getElementById('subtitle').innerText = t.subtitle;
-            document.getElementById('modeLabel').innerText = t.modeLabel;
-            document.getElementById('speedLabel').innerText = t.speedLabel;
-            document.getElementById('powerLabel').innerText = t.powerLabel;
-            document.getElementById('gridLabel').innerText = t.gridLabel;
-            document.getElementById('rulerLabel').innerText = t.rulerLabel;
-            document.getElementById('tangentLabel').innerText = t.tangentLabel;
-            document.getElementById('predictLabel').innerText = t.predictLabel;
-            document.getElementById('resetText').innerText = t.resetText;
-            document.getElementById('helpText').innerText = t.helpText;
-            document.getElementById('footerText').innerHTML = t.footer;
-            document.getElementById('rulesModalTitle').innerHTML = t.rulesTitle;
-            document.getElementById('historyTitle').innerHTML = t.historyTitle;
-            document.getElementById('chordVisualLabel').innerHTML = t.chordVisualLabel;
-            document.getElementById('modeFree').innerHTML = t.free;
-            document.getElementById('modeReflect1').innerHTML = t.reflect1;
-            document.getElementById('modeReflect2').innerHTML = t.reflect2;
-            document.getElementById('modeTangent').innerHTML = t.tangent;
-            document.getElementById('modeAngle').innerHTML = t.angle;
-            document.getElementById('modeChord').innerHTML = t.chord;
-            document.getElementById('challengeName').innerText = t[currentMode] || t.free;
-            document.getElementById('themeBtn').innerHTML = t.theme;
-            document.getElementById('rulesBtn').innerHTML = t.rules;
-            document.getElementById('undoBtn').innerHTML = t.undo;
-            updateRulesModal();
-            updateAngleHistoryUI();
-            updateModeSpecificInfo();
+
+        function t(key) {
+            return i18n[currentLang][key] || i18n.en[key];
         }
-        
-        function updateRulesModal(){
-            const t = i18n[lang];
-            document.getElementById('rulesModalContent').innerHTML = `
-                <div class="rule-section">
-                    <strong>${t.free}</strong><br>${t.ruleFree}<br><br>
-                    <strong>${t.reflect1}</strong><br>${t.ruleReflect1}<br><br>
-                    <strong>${t.reflect2}</strong><br>${t.ruleReflect2}<br><br>
-                    <strong>${t.tangent}</strong><br>${t.ruleTangent}<br><br>
-                    <strong>${t.angle}</strong><br>${t.ruleAngle}<br><br>
-                    <strong>${t.chord}</strong><br>${t.ruleChord}<br><br>
-                    <span style="color:#d9534f;">${t.powerHint}</span>
-                </div>
-            `;
-        }
-        
-        function updateAngleHistoryUI(){
-            const t = i18n[lang];
-            const list = document.getElementById('angleHistoryList');
-            if(angleHistory.length === 0){
-                list.innerHTML = '<li>— 暂无碰撞 —</li>';
-                return;
-            }
-            list.innerHTML = angleHistory.map(h => `<li>${t.angleRecord.replace('{inc}', h.inc).replace('{ref}', h.ref)}</li>`).join('');
-        }
-        
-        function updateModeSpecificInfo(){
-            const t = i18n[lang];
-            const infoDiv = document.getElementById('modeSpecificInfo');
-            if(currentMode === 'angle'){
-                infoDiv.innerHTML = `<span style="color:#ffaa33;">📐 ${t.modeAngleInfo}</span>`;
-            } else if(currentMode === 'chord'){
-                infoDiv.innerHTML = `<span style="color:#88ffaa;">📏 ${t.modeChordInfo}</span>`;
-            } else {
-                infoDiv.innerHTML = '';
-            }
-        }
-        
-        // 辅助函数
-        function clampInside(p, margin=ballR){
-            let dx = p.x - circle.x, dy = p.y - circle.y, dist = Math.hypot(dx,dy);
-            if(dist + margin > circle.r){
-                let ang = Math.atan2(dy,dx);
-                p.x = circle.x + (circle.r - margin) * Math.cos(ang);
-                p.y = circle.y + (circle.r - margin) * Math.sin(ang);
-            }
-        }
-        
-        function saveState(){
-            historyStack.push({
-                white: { x: whiteBall.x, y: whiteBall.y, vx: whiteBall.vx, vy: whiteBall.vy },
-                target: { x: targetBall.x, y: targetBall.y },
-                score: score,
-                collisions: currentCollisions
+
+        // 更新UI文字
+        function updateUILanguage() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[currentLang][key]) {
+                    el.innerText = i18n[currentLang][key];
+                }
             });
-            if(historyStack.length > 20) historyStack.shift();
+            document.getElementById('langLabel').innerText = currentLang === 'en' ? '中文' : 'English';
+            document.getElementById('aiTip').innerText = t('aiMessage');
         }
-        
-        function undo(){
-            if(historyStack.length === 0) return;
-            let state = historyStack.pop();
-            whiteBall.x = state.white.x; whiteBall.y = state.white.y;
-            whiteBall.vx = state.white.vx; whiteBall.vy = state.white.vy;
-            targetBall.x = state.target.x; targetBall.y = state.target.y;
-            score = state.score; currentCollisions = state.collisions;
-            scoreSpan.innerText = score;
-            isMoving = false;
-            if(animFrame) cancelAnimationFrame(animFrame);
+
+        // 主题切换
+        function toggleTheme() {
+            isDark = !isDark;
+            if (isDark) {
+                document.body.classList.remove('light-mode');
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeLabel').innerText = '亮色';
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.body.classList.add('light-mode');
+                document.getElementById('themeLabel').innerText = '深色';
+            }
+            drawCanvas(); // 重绘
+        }
+
+        // 语言切换
+        function toggleLang() {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            updateUILanguage();
             drawCanvas();
         }
-        
-        function resetGame(){
-            saveState();
+
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        document.getElementById('langToggle').addEventListener('click', toggleLang);
+
+        // --- 工具函数：点是否在圆内 (考虑球半径) ---
+        function isInsideTable(x, y, margin = ballRadius) {
+            const dx = x - circle.x;
+            const dy = y - circle.y;
+            const dist = Math.hypot(dx, dy);
+            return dist + margin <= circle.r;
+        }
+
+        // 将点约束在圆内 (用于白球初始或重置)
+        function clampInsideTable(point, margin = ballRadius) {
+            const dx = point.x - circle.x;
+            const dy = point.y - circle.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist + margin > circle.r) {
+                const angle = Math.atan2(dy, dx);
+                point.x = circle.x + (circle.r - margin) * Math.cos(angle);
+                point.y = circle.y + (circle.r - margin) * Math.sin(angle);
+            }
+        }
+
+        // 重置游戏
+        function resetGame() {
+            // 停止运动
             isMoving = false;
             whiteBall.vx = 0; whiteBall.vy = 0;
-            whiteBall.x = circle.x; whiteBall.y = circle.y - 70;
-            clampInside(whiteBall, ballR);
-            do{
-                targetBall.x = circle.x + (Math.random()*2-1)*(R-35);
-                targetBall.y = circle.y + (Math.random()*2-1)*(R-35);
-            }while(Math.hypot(targetBall.x-whiteBall.x, targetBall.y-whiteBall.y) < 35 || Math.hypot(targetBall.x-circle.x,targetBall.y-circle.y)+targetBall.r > R-2);
-            clampInside(targetBall, targetBall.r);
-            currentCollisions = 0;
-            collisionEffect.active = false;
-            // 重置圆周角固定点
-            if(currentMode === 'angle'){
-                let ang1 = 30 * Math.PI/180, ang2 = 150 * Math.PI/180;
-                angleModePoints.A = { x: circle.x + R*Math.cos(ang1), y: circle.y + R*Math.sin(ang1) };
-                angleModePoints.B = { x: circle.x + R*Math.cos(ang2), y: circle.y + R*Math.sin(ang2) };
-            } else if(currentMode === 'chord'){
-                // 随机生成一条非直径的弦
-                let theta = Math.random() * Math.PI * 2;
-                let d = R * (0.2 + Math.random() * 0.6);
-                let midX = circle.x + d * Math.cos(theta);
-                let midY = circle.y + d * Math.sin(theta);
-                let perpAng = theta + Math.PI/2;
-                let halfLen = Math.sqrt(R*R - d*d);
-                let p1 = { x: midX + halfLen * Math.cos(perpAng), y: midY + halfLen * Math.sin(perpAng) };
-                let p2 = { x: midX - halfLen * Math.cos(perpAng), y: midY - halfLen * Math.sin(perpAng) };
-                chordForMode = { p1, p2, mid: {x:midX,y:midY}, slope: perpAng };
-            }
+            // 放置白球在圆心附近但确保在界内
+            whiteBall.x = circle.x;
+            whiteBall.y = circle.y - 80;
+            clampInsideTable(whiteBall, ballRadius);
+            // 随机放置目标球
+            do {
+                targetBall.x = circle.x + (Math.random() * 2 - 1) * (circle.r - 40);
+                targetBall.y = circle.y + (Math.random() * 2 - 1) * (circle.r - 40);
+            } while (Math.hypot(targetBall.x - whiteBall.x, targetBall.y - whiteBall.y) < 40 || !isInsideTable(targetBall.x, targetBall.y, targetBall.r));
+            // 确保目标也在界内
+            clampInsideTable(targetBall, targetBall.r);
+            collisionFlash.active = false;
             drawCanvas();
         }
-        
-        // 碰撞处理 (已修复角度记录)
-        function handleCollision(){
-            let dx = whiteBall.x - circle.x, dy = whiteBall.y - circle.y;
-            let dist = Math.hypot(dx,dy);
-            if(dist + ballR >= circle.r && dist > 1e-5){
-                let nx = dx/dist, ny = dy/dist;
-                whiteBall.x = circle.x + (circle.r - ballR) * nx;
-                whiteBall.y = circle.y + (circle.r - ballR) * ny;
-                let vmag = Math.hypot(whiteBall.vx, whiteBall.vy);
-                let inc = 0;
-                if(vmag>0.05){
-                    let dot = (whiteBall.vx*nx + whiteBall.vy*ny)/vmag;
-                    inc = Math.acos(Math.min(1,Math.abs(dot))) * 180/Math.PI;
+
+        // --- 碰撞检测与响应 (圆边界) ---
+        function handleCollisions() {
+            // 与圆形边界的碰撞
+            const dx = whiteBall.x - circle.x;
+            const dy = whiteBall.y - circle.y;
+            const dist = Math.hypot(dx, dy);
+            const overlap = dist + ballRadius - circle.r;
+            if (overlap >= 0 && dist > 1e-6) {
+                // 发生碰撞，需要修正位置并改变速度
+                // 碰撞点方向 (单位法线)
+                const nx = dx / dist;
+                const ny = dy / dist;
+                // 将球放回刚好接触的位置
+                whiteBall.x = circle.x + (circle.r - ballRadius) * nx;
+                whiteBall.y = circle.y + (circle.r - ballRadius) * ny;
+
+                // 速度反射：v_new = v - 2*(v·n)*n
+                const vn = whiteBall.vx * nx + whiteBall.vy * ny;
+                if (vn > 0) { // 如果速度是朝外的，才反射（避免卡在边界内反复）
+                    whiteBall.vx -= 2 * vn * nx;
+                    whiteBall.vy -= 2 * vn * ny;
                 }
-                let vdotn = whiteBall.vx*nx + whiteBall.vy*ny;
-                if(vdotn > 0){
-                    whiteBall.vx -= 2*vdotn*nx;
-                    whiteBall.vy -= 2*vdotn*ny;
-                }
-                let ref = inc;
-                let cp = { x: circle.x + circle.r*nx, y: circle.y + circle.r*ny };
-                let tx = -ny, ty = nx;
-                collisionEffect = { active: true, point: cp, normal: {x:nx,y:ny}, tangent:{x:tx,y:ty}, timer: 90, incAngle: inc, refAngle: ref };
-                lastCollisionGeom = collisionEffect;
-                // 记录角度历史
-                angleHistory.unshift({ inc: inc.toFixed(1), ref: ref.toFixed(1) });
-                if(angleHistory.length > 5) angleHistory.pop();
-                updateAngleHistoryUI();
-                
-                if(isMoving && !lastCollisionFrame){
-                    currentCollisions++;
-                    lastCollisionFrame = true;
-                }
-                return true;
+
+                // 记录碰撞几何：显示法线和切线
+                const collisionPoint = {
+                    x: circle.x + (circle.r) * nx,
+                    y: circle.y + (circle.r) * ny
+                };
+                // 切线方向 (垂直法线)
+                const tx = -ny;
+                const ty = nx;
+                collisionFlash = {
+                    active: true,
+                    point: collisionPoint,
+                    normal: { x: nx, y: ny },
+                    tangent: { x: tx, y: ty },
+                    timer: 30 // 持续约30帧 (0.5秒 60fps)
+                };
             }
-            lastCollisionFrame = false;
-            return false;
         }
-        
-        // 得分判定 (修复切线狙击逻辑)
-        function checkScore(){
-            let d = Math.hypot(whiteBall.x - targetBall.x, whiteBall.y - targetBall.y);
-            if(d < ballR + targetBall.r){
-                let success = false;
-                if(currentMode === 'free') success = true;
-                else if(currentMode === 'reflect1' && currentCollisions === 1) success = true;
-                else if(currentMode === 'reflect2' && currentCollisions === 2) success = true;
-                else if(currentMode === 'tangent'){
-                    // 修正切线判定: 速度方向垂直于连心线 (sin接近±1)
-                    let distCenter = Math.hypot(whiteBall.x-targetBall.x, whiteBall.y-targetBall.y);
-                    let velDir = Math.atan2(whiteBall.vy, whiteBall.vx);
-                    let toTarget = Math.atan2(targetBall.y-whiteBall.y, targetBall.x-whiteBall.x);
-                    let angleDiff = Math.abs(velDir - toTarget);
-                    let sinVal = Math.abs(Math.sin(angleDiff));
-                    if(Math.abs(distCenter - (ballR+targetBall.r)) < 5 && sinVal > 0.85) success = true;
-                }
-                else if(currentMode === 'angle') success = true;
-                else if(currentMode === 'chord') success = true;
-                
-                if(success){
-                    let distToCenter = Math.hypot(whiteBall.x-circle.x, whiteBall.y-circle.y);
-                    let mult = 2.0 - 1.5 * (distToCenter / R);
-                    mult = Math.min(2.0, Math.max(0.5, mult));
-                    let add = Math.floor(1 + (mult-1)*10);
-                    score += add;
-                    scoreSpan.innerText = score;
-                    showTip(`🎉 ${lang === 'zh' ? '得分' : 'Score'} +${add}！ ${lang === 'zh' ? '倍率' : 'Multiplier'} ${mult.toFixed(2)}`, 1500);
-                    
-                    // 圆周角模式特殊反馈
-                    if(currentMode === 'angle' && angleModePoints.A && angleModePoints.B){
-                        let P = { x: whiteBall.x, y: whiteBall.y };
-                        let angleAPB = computeInscribedAngle(angleModePoints.A, angleModePoints.B, P);
-                        let centerAngle = computeCentralAngle(angleModePoints.A, angleModePoints.B);
-                        showTip(`📐 圆周角 = ${angleAPB.toFixed(1)}° , 圆心角 = ${centerAngle.toFixed(1)}° , 比值 = ${(centerAngle/angleAPB).toFixed(2)} (应为2)`, 2500);
-                        lastAngleHitInfo = { angleAPB, centerAngle };
-                    }
-                    // 垂径模式特殊反馈
-                    if(currentMode === 'chord' && chordForMode){
-                        let throughCenter = Math.hypot(whiteBall.x - circle.x, whiteBall.y - circle.y) < ballR+2;
-                        let isPerp = false;
-                        // 检查白球路径是否垂直于弦 (速度方向与弦方向点积接近0)
-                        let chordDir = { x: chordForMode.p2.x - chordForMode.p1.x, y: chordForMode.p2.y - chordForMode.p1.y };
-                        let velDir = { x: whiteBall.vx, y: whiteBall.vy };
-                        let dot = velDir.x * chordDir.x + velDir.y * chordDir.y;
-                        if(Math.abs(dot) < 0.5 && throughCenter) isPerp = true;
-                        if(throughCenter && isPerp) showTip(`✅ 垂径定理成立！ 路径经过圆心且垂直于弦`, 2000);
-                        else showTip(`❌ 未满足垂径条件: 需要经过圆心且垂直于弦`, 2000);
-                    }
-                } else {
-                    showTip(`❌ ${lang === 'zh' ? '挑战失败' : 'Challenge failed'}`, 1500);
-                }
-                // 重置红球
-                do{
-                    targetBall.x = circle.x + (Math.random()*2-1)*(R-35);
-                    targetBall.y = circle.y + (Math.random()*2-1)*(R-35);
-                }while(Math.hypot(targetBall.x-whiteBall.x, targetBall.y-whiteBall.y) < 35 || Math.hypot(targetBall.x-circle.x,targetBall.y-circle.y)+targetBall.r > R-2);
-                clampInside(targetBall, targetBall.r);
-                currentCollisions = 0;
-                return true;
+
+        // 检查击中目标
+        function checkHitTarget() {
+            const d = Math.hypot(whiteBall.x - targetBall.x, whiteBall.y - targetBall.y);
+            if (d < ballRadius + targetBall.r) {
+                score += 1;
+                document.getElementById('scoreDisplay').innerText = score;
+                // 重新放置目标球
+                do {
+                    targetBall.x = circle.x + (Math.random() * 2 - 1) * (circle.r - 40);
+                    targetBall.y = circle.y + (Math.random() * 2 - 1) * (circle.r - 40);
+                } while (Math.hypot(targetBall.x - whiteBall.x, whiteBall.y - targetBall.y) < 40 || !isInsideTable(targetBall.x, targetBall.y, targetBall.r));
+                clampInsideTable(targetBall, targetBall.r);
+                // 可选：播放音效占位
             }
-            return false;
         }
-        
-        function computeInscribedAngle(A, B, P){
-            let angA = Math.atan2(A.y - P.y, A.x - P.x);
-            let angB = Math.atan2(B.y - P.y, B.x - P.x);
-            let diff = Math.abs(angA - angB);
-            if(diff > Math.PI) diff = 2*Math.PI - diff;
-            return diff * 180 / Math.PI;
-        }
-        function computeCentralAngle(A, B){
-            let angA = Math.atan2(A.y - circle.y, A.x - circle.x);
-            let angB = Math.atan2(B.y - circle.y, B.x - circle.x);
-            let diff = Math.abs(angA - angB);
-            if(diff > Math.PI) diff = 2*Math.PI - diff;
-            return diff * 180 / Math.PI;
-        }
-        
-        function showTip(msg, duration){
-            let tipDiv = document.getElementById('dynamicTip');
-            if(!tipDiv){
-                tipDiv = document.createElement('div');
-                tipDiv.id = 'dynamicTip';
-                tipDiv.style.position = 'fixed'; tipDiv.style.bottom = '20px'; tipDiv.style.right = '20px';
-                tipDiv.style.background = '#333'; tipDiv.style.color = 'white'; tipDiv.style.padding = '10px 20px';
-                tipDiv.style.borderRadius = '30px'; tipDiv.style.zIndex = '1000'; tipDiv.style.fontSize = '1rem';
-                document.body.appendChild(tipDiv);
-            }
-            tipDiv.innerText = msg;
-            tipDiv.style.opacity = '1';
-            setTimeout(()=>{ tipDiv.style.opacity = '0'; }, duration);
-        }
-        
-        function updatePhysics(){
-            if(!isMoving) return;
+
+        // 更新物理 (动画循环)
+        function updatePhysics() {
+            if (!isMoving) return;
+
+            // 简单摩擦减速
             whiteBall.vx *= friction;
             whiteBall.vy *= friction;
-            whiteBall.x += whiteBall.vx * speedFactor;
-            whiteBall.y += whiteBall.vy * speedFactor;
-            handleCollision();
-            checkScore();
-            if(Math.hypot(whiteBall.vx, whiteBall.vy) < 0.1){
+
+            // 移动
+            whiteBall.x += whiteBall.vx;
+            whiteBall.y += whiteBall.vy;
+
+            // 边界碰撞处理
+            handleCollisions();
+
+            // 检查击中目标
+            checkHitTarget();
+
+            // 如果速度很小，停止运动
+            if (Math.hypot(whiteBall.vx, whiteBall.vy) < 0.05) {
                 isMoving = false;
-                whiteBall.vx = whiteBall.vy = 0;
-                currentCollisions = 0;
+                whiteBall.vx = 0; whiteBall.vy = 0;
             }
-            if(collisionEffect.active){
-                collisionEffect.timer--;
-                if(collisionEffect.timer<=0) collisionEffect.active = false;
+
+            // 递减碰撞闪光计时器
+            if (collisionFlash.active) {
+                collisionFlash.timer--;
+                if (collisionFlash.timer <= 0) {
+                    collisionFlash.active = false;
+                }
             }
+
             drawCanvas();
-            if(isMoving) animFrame = requestAnimationFrame(updatePhysics);
+
+            // 继续动画
+            if (isMoving) {
+                animFrame = requestAnimationFrame(updatePhysics);
+            }
         }
-        
-        // 力度映射优化 (非线性)
-        function computePowerFromDrag(len){
-            let ratio = Math.min(1, len / 80);
-            let power = 16 * Math.pow(ratio, 1.5);
-            return Math.min(16, power);
-        }
-        
-        function shoot(vx, vy){
-            if(isMoving) return;
-            saveState();
-            whiteBall.vx = vx;
-            whiteBall.vy = vy;
-            currentCollisions = 0;
+
+        // 开始击球
+        function shootBall(powerX, powerY) {
+            if (isMoving) return; // 球在运动时不能再次击球
+            // 速度与拖拽方向相反 (因为是从球向外拉)
+            whiteBall.vx = -powerX;
+            whiteBall.vy = -powerY;
             isMoving = true;
-            if(animFrame) cancelAnimationFrame(animFrame);
+            // 开始动画循环
+            if (animFrame) cancelAnimationFrame(animFrame);
             animFrame = requestAnimationFrame(updatePhysics);
         }
-        
-        // 预测路径 (增加角度预测)
-        function predictPath(startX, startY, vx, vy, maxSteps=4){
-            let points = [{x:startX, y:startY}];
-            let reflections = [];
-            let pos = {x:startX, y:startY};
-            let vel = {x:vx, y:vy};
-            let bounce = 0, iter = 0;
-            while(iter < 400 && bounce <= maxSteps){
-                let newX = pos.x + vel.x * 0.8;
-                let newY = pos.y + vel.y * 0.8;
-                let dx = newX - circle.x, dy = newY - circle.y;
-                let dist = Math.hypot(dx, dy);
-                if(dist + ballR >= circle.r && dist > 1e-5){
-                    let nx = dx/dist, ny = dy/dist;
-                    let dot = vel.x*nx + vel.y*ny;
-                    if(dot < 0){
-                        let incAngle = Math.acos(Math.abs(dot) / Math.hypot(vel.x, vel.y)) * 180/Math.PI;
-                        vel.x -= 2*dot*nx;
-                        vel.y -= 2*dot*ny;
-                        bounce++;
-                        let cp = { x: circle.x + circle.r*nx, y: circle.y + circle.r*ny };
-                        reflections.push({x:cp.x, y:cp.y, order: bounce, normal: {x:nx,y:ny}, incAngle: incAngle.toFixed(0)});
-                        newX = circle.x + (circle.r - ballR - 1) * nx;
-                        newY = circle.y + (circle.r - ballR - 1) * ny;
-                    }
-                }
-                pos.x = newX; pos.y = newY;
-                points.push({x:pos.x, y:pos.y});
-                iter++;
-                if(Math.hypot(vel.x, vel.y) < 0.05) break;
-            }
-            return { points, reflections };
-        }
-        
-        // 绘图
-        function drawCanvas(){
-            ctx.clearRect(0,0,width,height);
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            ctx.fillStyle = isDarkMode ? '#1a2a1a' : '#2b5e3b';
-            ctx.fillRect(0,0,width,height);
+
+        // --- 绘制 ---
+        function drawCanvas() {
+            ctx.clearRect(0, 0, width, height);
+
+            // 背景色
+            ctx.fillStyle = isDark ? '#1a2a1a' : '#2b5e3b';
+            ctx.fillRect(0, 0, width, height);
+
+            // 绘制台球桌 (圆形区域)
             ctx.save();
-            ctx.beginPath(); ctx.arc(circle.x, circle.y, circle.r, 0, 2*Math.PI); ctx.clip();
-            
-            if(showGrid){
-                ctx.strokeStyle = isDarkMode ? '#88aa88' : '#cceecc';
-                ctx.lineWidth = 0.8;
-                for(let r=30; r<=R; r+=30){ ctx.beginPath(); ctx.arc(circle.x, circle.y, r, 0, 2*Math.PI); ctx.stroke(); }
-                for(let ang=0; ang<360; ang+=15){
-                    let rad = ang*Math.PI/180;
-                    let x2 = circle.x + R*Math.cos(rad), y2 = circle.y + R*Math.sin(rad);
-                    ctx.beginPath(); ctx.moveTo(circle.x, circle.y); ctx.lineTo(x2, y2); ctx.stroke();
-                }
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, circle.r, 0, 2 * Math.PI);
+            ctx.clip(); // 限制绘制区域在圆内，制造桌面效果
+
+            // 桌面颜色
+            ctx.fillStyle = isDark ? '#1e4d2b' : '#3b7a4b';
+            ctx.fillRect(0, 0, width, height);
+
+            // 绘制网格线 (帮助定位)
+            ctx.strokeStyle = isDark ? '#4d6b4d' : '#9fcc9f';
+            ctx.lineWidth = 1;
+            for (let i = -circle.r; i <= circle.r; i += 30) {
+                ctx.beginPath();
+                ctx.moveTo(circle.x + i, circle.y - circle.r);
+                ctx.lineTo(circle.x + i, circle.y + circle.r);
+                ctx.strokeStyle = isDark ? '#3b553b' : '#b0dbb0';
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(circle.x - circle.r, circle.y + i);
+                ctx.lineTo(circle.x + circle.r, circle.y + i);
+                ctx.stroke();
             }
-            
-            if(showRuler){
-                let d = Math.hypot(whiteBall.x-circle.x, whiteBall.y-circle.y);
-                ctx.font = "12px monospace"; ctx.fillStyle = 'yellow';
-                ctx.fillText(`d = ${d.toFixed(1)} / R = ${R.toFixed(1)}`, circle.x-40, circle.y-R-5);
-                let chordLen = 2 * Math.sqrt(Math.max(0, R*R - d*d));
-                ctx.fillText(`${lang === 'zh' ? '弦长' : 'Chord'} ≈ ${chordLen.toFixed(1)}`, circle.x-40, circle.y-R-20);
-                if(showChordVisual){
-                    let perpAng = Math.atan2(whiteBall.y-circle.y, whiteBall.x-circle.x);
-                    let halfLen = Math.sqrt(R*R - d*d);
-                    let p1 = { x: whiteBall.x + halfLen * Math.cos(perpAng+Math.PI/2), y: whiteBall.y + halfLen * Math.sin(perpAng+Math.PI/2) };
-                    let p2 = { x: whiteBall.x - halfLen * Math.cos(perpAng+Math.PI/2), y: whiteBall.y - halfLen * Math.sin(perpAng+Math.PI/2) };
-                    ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
-                    ctx.strokeStyle = '#ffaa88'; ctx.lineWidth = 2; ctx.setLineDash([6,8]); ctx.stroke(); ctx.setLineDash([]);
-                }
+
+            // 绘制圆心标记
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, 4, 0, 2*Math.PI);
+            ctx.fillStyle = isDark ? '#ffd966' : '#f0e68c';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // 绘制目标球
+            ctx.beginPath();
+            ctx.arc(targetBall.x, targetBall.y, targetBall.r, 0, 2*Math.PI);
+            ctx.fillStyle = '#e63946';
+            ctx.shadowBlur = 12;
+            ctx.fill();
+            // 高光
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.arc(targetBall.x-2, targetBall.y-2, 3, 0, 2*Math.PI);
+            ctx.fillStyle = '#fff9';
+            ctx.fill();
+
+            // 绘制白球
+            ctx.beginPath();
+            ctx.arc(whiteBall.x, whiteBall.y, ballRadius, 0, 2*Math.PI);
+            ctx.fillStyle = '#f8f9fa';
+            ctx.shadowBlur = 15;
+            ctx.fill();
+            ctx.strokeStyle = '#aaa';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            // 高光
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.arc(whiteBall.x-3, whiteBall.y-3, 4, 0, 2*Math.PI);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // 如果正在瞄准，绘制瞄准线
+            if (isAiming && aimEnd) {
+                ctx.beginPath();
+                ctx.moveTo(whiteBall.x, whiteBall.y);
+                ctx.lineTo(aimEnd.x, aimEnd.y);
+                ctx.strokeStyle = '#ffaa00';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([8, 6]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // 绘制力度指示 (圆圈)
+                const power = Math.hypot(aimEnd.x - whiteBall.x, aimEnd.y - whiteBall.y) / 30; // 缩放
+                ctx.beginPath();
+                ctx.arc(whiteBall.x, whiteBall.y, ballRadius + power * 8, 0, 2*Math.PI);
+                ctx.strokeStyle = '#ffaa00';
+                ctx.lineWidth = 2;
+                ctx.stroke();
             }
-            
-            // 模式特殊绘制
-            if(currentMode === 'angle' && angleModePoints.A && angleModePoints.B){
-                ctx.beginPath(); ctx.arc(angleModePoints.A.x, angleModePoints.A.y, 6, 0, 2*Math.PI);
-                ctx.fillStyle = '#ff6666'; ctx.fill();
-                ctx.beginPath(); ctx.arc(angleModePoints.B.x, angleModePoints.B.y, 6, 0, 2*Math.PI);
-                ctx.fill();
-                ctx.fillStyle = 'white'; ctx.fillText('A', angleModePoints.A.x-4, angleModePoints.A.y-4);
-                ctx.fillText('B', angleModePoints.B.x-4, angleModePoints.B.y-4);
+
+            // 绘制碰撞几何 (法线/切线)
+            if (collisionFlash.active && collisionFlash.point) {
+                const p = collisionFlash.point;
+                const n = collisionFlash.normal;
+                const t = collisionFlash.tangent;
+                // 法线 (红色，从碰撞点向内一点)
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p.x + n.x * 40, p.y + n.y * 40);
+                ctx.strokeStyle = '#ff3333';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                // 切线 (蓝色)
+                ctx.beginPath();
+                ctx.moveTo(p.x - t.x * 40, p.y - t.y * 40);
+                ctx.lineTo(p.x + t.x * 40, p.y + t.y * 40);
+                ctx.strokeStyle = '#33aaff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                // 小标签
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillStyle = 'white';
+                ctx.shadowColor = 'black';
+                ctx.shadowBlur = 4;
+                ctx.fillText('法线', p.x + n.x*45 - 15, p.y + n.y*45 - 10);
+                ctx.fillText('切线', p.x + t.x*45 - 15, p.y + t.y*45 - 10);
+                ctx.shadowBlur = 0;
             }
-            if(currentMode === 'chord' && chordForMode){
-                ctx.beginPath(); ctx.moveTo(chordForMode.p1.x, chordForMode.p1.y); ctx.lineTo(chordForMode.p2.x, chordForMode.p2.y);
-                ctx.strokeStyle = '#3399ff'; ctx.lineWidth = 3; ctx.stroke();
-                ctx.fillStyle = '#3399ff'; ctx.fillText('弦', (chordForMode.p1.x+chordForMode.p2.x)/2, (chordForMode.p1.y+chordForMode.p2.y)/2);
-            }
-            
-            // 红球/白球
-            ctx.beginPath(); ctx.arc(targetBall.x, targetBall.y, targetBall.r, 0, 2*Math.PI);
-            ctx.fillStyle = '#e63946'; ctx.fill();
-            ctx.beginPath(); ctx.arc(whiteBall.x, whiteBall.y, ballR, 0, 2*Math.PI);
-            ctx.fillStyle = '#f8f9fa'; ctx.fill(); ctx.stroke();
-            
-            // 瞄准预测
-            if(isAiming && aimEnd && showPredict){
-                let dx = aimEnd.x - whiteBall.x, dy = aimEnd.y - whiteBall.y;
-                let len = Math.hypot(dx, dy);
-                if(len > 2){
-                    let power = computePowerFromDrag(len);
-                    let vx = dx/len * power, vy = dy/len * power;
-                    let { points, reflections } = predictPath(whiteBall.x, whiteBall.y, vx, vy, 4);
-                    ctx.beginPath(); ctx.setLineDash([8,6]); ctx.strokeStyle = '#88ff88'; ctx.lineWidth = 2;
-                    for(let i=0;i<points.length-1;i++){
-                        ctx.beginPath(); ctx.moveTo(points[i].x, points[i].y); ctx.lineTo(points[i+1].x, points[i+1].y); ctx.stroke();
-                    }
-                    for(let rp of reflections){
-                        ctx.beginPath(); ctx.arc(rp.x, rp.y, 7, 0, 2*Math.PI);
-                        ctx.fillStyle = '#ffaa33cc'; ctx.fill();
-                        ctx.fillStyle = 'white'; ctx.font = 'bold 14px'; ctx.fillText(rp.order, rp.x-4, rp.y+5);
-                        ctx.fillStyle = '#ffffaa'; ctx.font = '12px monospace';
-                        ctx.fillText(`${rp.incAngle}°`, rp.x-12, rp.y-8);
-                        ctx.beginPath(); ctx.moveTo(rp.x, rp.y); ctx.lineTo(rp.x + rp.normal.x*22, rp.y + rp.normal.y*22);
-                        ctx.strokeStyle = '#ff8888'; ctx.lineWidth = 1.5; ctx.stroke();
-                    }
-                    ctx.setLineDash([]);
-                    let percent = Math.min(1, len/80)*100;
-                    powerSlider.value = percent; powerVal.innerText = Math.floor(percent)+'%';
-                }
-            } else if(!isAiming){
-                powerSlider.value = 0; powerVal.innerText = '0%';
-            }
-            
-            // 碰撞几何
-            let displayGeom = collisionEffect.active ? collisionEffect : (showTangentHelper ? lastCollisionGeom : null);
-            if(displayGeom && displayGeom.point){
-                let p = displayGeom.point, n = displayGeom.normal, t = displayGeom.tangent;
-                ctx.beginPath(); ctx.moveTo(circle.x, circle.y); ctx.lineTo(p.x, p.y);
-                ctx.strokeStyle = '#ff77aa'; ctx.lineWidth = 2.5; ctx.setLineDash([4,6]); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + n.x*50, p.y + n.y*50);
-                ctx.strokeStyle = '#ff4444'; ctx.lineWidth = 2.5; ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(p.x - t.x*50, p.y - t.y*50); ctx.lineTo(p.x + t.x*50, p.y + t.y*50);
-                ctx.strokeStyle = '#44aaff'; ctx.lineWidth = 2.5; ctx.stroke();
-                let perpX = p.x + n.x*14, perpY = p.y + n.y*14;
-                let sideX = perpX + t.x*10, sideY = perpY + t.y*10;
-                ctx.beginPath(); ctx.moveTo(perpX, perpY); ctx.lineTo(sideX, sideY); ctx.lineTo(sideX - n.x*10, sideY - n.y*10);
-                ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
-                ctx.fillStyle = 'yellow'; ctx.fillText('⊥', sideX-7, sideY-5);
-                ctx.font = "bold 14px monospace"; ctx.fillStyle = '#ffffaa';
-                ctx.fillText(`${lang === 'zh' ? '入射' : 'Inc'} ${displayGeom.incAngle.toFixed(0)}°`, p.x + n.x*30-25, p.y + n.y*30-18);
-                ctx.fillStyle = '#aaffdd';
-                ctx.fillText(`${lang === 'zh' ? '反射' : 'Ref'} ${displayGeom.refAngle.toFixed(0)}°`, p.x + n.x*30-25, p.y + n.y*30+8);
-                ctx.fillStyle = '#ffaa88'; ctx.font = 'italic 12px';
-                ctx.fillText(`半径 ⊥ 切线`, p.x + n.x*15, p.y + n.y*15-12);
-            }
-            ctx.restore();
-            ctx.beginPath(); ctx.arc(circle.x, circle.y, circle.r, 0, 2*Math.PI);
-            ctx.strokeStyle = '#f5e56b'; ctx.lineWidth = 3; ctx.stroke();
+
+            ctx.restore(); // 结束裁剪
+
+            // 绘制圆形边界
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, circle.r, 0, 2*Math.PI);
+            ctx.strokeStyle = isDark ? '#bbbbbb' : '#f0e68c';
+            ctx.lineWidth = 4;
+            ctx.stroke();
         }
-        
-        function setMode(mode){
-            currentMode = mode;
-            updateLanguage();
-            resetGame();
-            drawCanvas();
+
+        // --- 鼠标事件处理 (瞄准与击球) ---
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+                e.preventDefault();
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
         }
-        
-        // 事件绑定
-        const scoreSpan = document.getElementById('scoreValue');
-        const speedSlider = document.getElementById('speedSlider');
-        const speedVal = document.getElementById('speedVal');
-        const powerSlider = document.getElementById('powerSlider');
-        const powerVal = document.getElementById('powerVal');
-        
-        document.getElementById('showGrid').addEventListener('change', (e) => { showGrid = e.target.checked; drawCanvas(); });
-        document.getElementById('showRuler').addEventListener('change', (e) => { showRuler = e.target.checked; drawCanvas(); });
-        document.getElementById('showTangentHelper').addEventListener('change', (e) => { showTangentHelper = e.target.checked; drawCanvas(); });
-        document.getElementById('showPredict').addEventListener('change', (e) => { showPredict = e.target.checked; drawCanvas(); });
-        document.getElementById('showChordVisual').addEventListener('change', (e) => { showChordVisual = e.target.checked; drawCanvas(); });
-        
-        function getCoords(e){
-            let rect = canvas.getBoundingClientRect();
-            let sx = canvas.width/rect.width, sy = canvas.height/rect.height;
-            let cx, cy;
-            if(e.touches){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; e.preventDefault(); }
-            else { cx = e.clientX; cy = e.clientY; }
-            return { x: (cx-rect.left)*sx, y: (cy-rect.top)*sy };
-        }
-        
-        function onMouseDown(e){
+
+        function onMouseDown(e) {
             e.preventDefault();
-            if(isMoving) return;
-            let {x,y} = getCoords(e);
-            if(Math.hypot(x-whiteBall.x, y-whiteBall.y) <= ballR+5){
+            if (isMoving) return; // 运动时不能瞄准
+
+            const { x, y } = getCanvasCoords(e);
+            // 检查是否点击了白球
+            const dist = Math.hypot(x - whiteBall.x, y - whiteBall.y);
+            if (dist <= ballRadius + 5) {
                 isAiming = true;
-                aimEnd = {x:whiteBall.x, y:whiteBall.y};
+                aimStart = { x: whiteBall.x, y: whiteBall.y };
+                aimEnd = { x: whiteBall.x, y: whiteBall.y };
                 drawCanvas();
             }
         }
-        function onMouseMove(e){
-            if(!isAiming) return;
+
+        function onMouseMove(e) {
+            if (!isAiming) return;
             e.preventDefault();
-            let {x,y} = getCoords(e);
-            let dx = x-whiteBall.x, dy = y-whiteBall.y;
-            let len = Math.hypot(dx,dy);
-            if(len>120){ x = whiteBall.x + dx/len*120; y = whiteBall.y + dy/len*120; }
-            aimEnd = {x,y};
+            const { x, y } = getCanvasCoords(e);
+            // 限制aimEnd不能太远，避免出界
+            aimEnd.x = x;
+            aimEnd.y = y;
+            // 计算向量 (从白球指向鼠标)
+            const dx = aimEnd.x - whiteBall.x;
+            const dy = aimEnd.y - whiteBall.y;
+            const len = Math.hypot(dx, dy);
+            if (len > maxPower * 3) { // 限制最大显示力度
+                aimEnd.x = whiteBall.x + (dx / len) * maxPower * 3;
+                aimEnd.y = whiteBall.y + (dy / len) * maxPower * 3;
+            }
             drawCanvas();
         }
-        function onMouseUp(e){
-            if(!isAiming) return;
+
+        function onMouseUp(e) {
+            if (!isAiming) return;
             e.preventDefault();
-            let dx = aimEnd.x - whiteBall.x, dy = aimEnd.y - whiteBall.y;
-            let len = Math.hypot(dx,dy);
-            if(len>2){
-                let power = computePowerFromDrag(len);
-                let vx = dx/len * power, vy = dy/len * power;
-                shoot(vx, vy);
+            // 计算击球速度
+            const dx = aimEnd.x - whiteBall.x;
+            const dy = aimEnd.y - whiteBall.y;
+            const len = Math.hypot(dx, dy);
+            if (len > 1) {
+                // 速度与拖拽方向相反，且与长度成正比 (但不超过maxPower)
+                const power = Math.min(len / 2, maxPower); // 缩放因子
+                const vx = (dx / len) * power;
+                const vy = (dy / len) * power;
+                shootBall(vx, vy);
             }
             isAiming = false;
             drawCanvas();
         }
-        
+
+        // 注册事件
         canvas.addEventListener('mousedown', onMouseDown);
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
-        canvas.addEventListener('touchstart', onMouseDown, {passive:false});
-        window.addEventListener('touchmove', onMouseMove, {passive:false});
+        canvas.addEventListener('touchstart', onMouseDown, { passive: false });
+        window.addEventListener('touchmove', onMouseMove, { passive: false });
         window.addEventListener('touchend', onMouseUp);
-        
-        document.getElementById('modeFree').onclick = ()=>setMode('free');
-        document.getElementById('modeReflect1').onclick = ()=>setMode('reflect1');
-        document.getElementById('modeReflect2').onclick = ()=>setMode('reflect2');
-        document.getElementById('modeTangent').onclick = ()=>setMode('tangent');
-        document.getElementById('modeAngle').onclick = ()=>setMode('angle');
-        document.getElementById('modeChord').onclick = ()=>setMode('chord');
-        document.getElementById('resetBtn').onclick = ()=>{ resetGame(); drawCanvas(); };
-        document.getElementById('undoBtn').onclick = undo;
-        
-        speedSlider.oninput = (e)=>{ speedFactor = parseFloat(e.target.value); speedVal.innerText = speedFactor.toFixed(2)+'x'; };
-        
-        // 移动端辅助
-        let dirAngleRad = 0;
-        document.getElementById('dirUp').onclick = ()=>{ dirAngleRad = -Math.PI/2; dirPower = 0.8; updateDirHint(); };
-        document.getElementById('dirDown').onclick = ()=>{ dirAngleRad = Math.PI/2; dirPower = 0.8; updateDirHint(); };
-        document.getElementById('dirLeft').onclick = ()=>{ dirAngleRad = Math.PI; dirPower = 0.8; updateDirHint(); };
-        document.getElementById('dirRight').onclick = ()=>{ dirAngleRad = 0; dirPower = 0.8; updateDirHint(); };
-        document.getElementById('dirShoot').onclick = ()=>{
-            if(isMoving) return;
-            let vx = Math.cos(dirAngleRad) * 12 * dirPower;
-            let vy = Math.sin(dirAngleRad) * 12 * dirPower;
-            shoot(vx, vy);
-        };
-        function updateDirHint(){
-            document.getElementById('dirPowerHint').innerText = `力度:${Math.floor(dirPower*100)}%`;
+        canvas.addEventListener('touchcancel', () => { isAiming = false; drawCanvas(); });
+
+        // 重置按钮
+        document.getElementById('resetBtn').addEventListener('click', resetGame);
+
+        // 初始化
+        function init() {
+            updateUILanguage();
+            document.getElementById('scoreDisplay').innerText = score;
+            resetGame(); // 会调用drawCanvas
         }
-        
-        let isDark = false;
-        document.getElementById('themeBtn').onclick = ()=>{
-            isDark = !isDark;
-            document.body.classList.toggle('dark-mode', isDark);
-            document.body.classList.remove('light-mode');
-            if(!isDark) document.body.classList.add('light-mode');
-            drawCanvas();
-        };
-        
-        document.getElementById('langBtn').onclick = ()=>{
-            lang = lang === 'zh' ? 'en' : 'zh';
-            updateLanguage();
-            drawCanvas();
-        };
-        
-        const rulesModal = document.getElementById('rulesModal');
-        const rulesBtn = document.getElementById('rulesBtn');
-        const closeRulesBtn = document.getElementById('closeRulesBtn');
-        rulesBtn.onclick = () => { rulesModal.style.display = 'flex'; };
-        closeRulesBtn.onclick = () => { rulesModal.style.display = 'none'; };
-        window.onclick = (e) => { if(e.target === rulesModal) rulesModal.style.display = 'none'; };
-        
-        document.getElementById('helpBtn').onclick = ()=>{
-            let modal = document.createElement('div');
-            modal.style.position = 'fixed'; modal.style.top='0'; modal.style.left='0'; modal.style.width='100%'; modal.style.height='100%';
-            modal.style.background='rgba(0,0,0,0.7)'; modal.style.display='flex'; modal.style.justifyContent='center'; modal.style.alignItems='center'; modal.style.zIndex='2000';
-            let content = document.createElement('div');
-            content.style.background='white'; content.style.padding='20px'; content.style.borderRadius='24px'; content.style.maxWidth='500px';
-            content.innerHTML = `<h3>${i18n[lang].helpText}</h3><p>${i18n[lang].ruleFree}<br><br>${i18n[lang].ruleReflect1}<br><br>${i18n[lang].ruleTangent}<br><br>${i18n[lang].ruleAngle}<br><br>${i18n[lang].ruleChord}</p><button id="closeModalBtn" style="margin-top:15px;padding:8px 20px;">${lang === 'zh' ? '关闭' : 'Close'}</button>`;
-            modal.appendChild(content);
-            document.body.appendChild(modal);
-            document.getElementById('closeModalBtn').onclick = ()=>modal.remove();
-        };
-        
-        updateLanguage();
-        resetGame();
-        drawCanvas();
+        init();
     })();
 </script>
 </body>
