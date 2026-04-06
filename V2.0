@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Circular_Billards</title>
+    <title>圆几何台球 · 定理互动实验室 | 完整版</title>
     <style>
         * {
             box-sizing: border-box;
@@ -146,9 +146,9 @@
         </div>
         <div class="toolbar">
             <button id="langBtn">🌐 中文/EN</button>
-            <button id="themeBtn">🌙 深色</button>
-            <button id="rulesBtn">📜 游戏规则</button>
-            <button id="undoBtn">↩️ 撤销</button>
+            <button id="themeBtn" data-i18n="theme">🌙 深色</button>
+            <button id="rulesBtn" data-i18n="rules">📜 游戏规则</button>
+            <button id="undoBtn" data-i18n="undo">↩️ 撤销</button>
         </div>
     </div>
 
@@ -264,7 +264,11 @@
                 ruleTangent: "✂️ 白球路径必须与红球相切（擦过），系统会提示“半径⊥切线”。",
                 ruleAngle: "📐 击中红球时，自动显示圆弧所对圆周角和圆心角，验证定理。",
                 ruleChord: "📏 白球路径需垂直平分一条弦（经过圆心）。",
-                powerHint: "💪 满力度击球可轻松实现2~3次反射。"
+                powerHint: "💪 满力度击球可轻松实现2~3次反射。",
+                // 工具栏按钮
+                theme: "🌙 深色",
+                rules: "📜 游戏规则",
+                undo: "↩️ 撤销"
             },
             en: {
                 mainTitle: "📐 Circle Geometry Billiards · Theorem Lab",
@@ -292,7 +296,11 @@
                 ruleTangent: "✂️ White ball path must be tangent to red ball (grazing).",
                 ruleAngle: "📐 When hitting red ball, displays inscribed/central angle to verify theorem.",
                 ruleChord: "📏 White ball path must perpendicularly bisect a chord (pass through center).",
-                powerHint: "💪 Max power easily achieves 2-3 reflections."
+                powerHint: "💪 Max power easily achieves 2-3 reflections.",
+                // 工具栏按钮
+                theme: "🌙 Dark",
+                rules: "📜 Rules",
+                undo: "↩️ Undo"
             }
         };
         
@@ -311,6 +319,7 @@
             document.getElementById('helpText').innerText = t.helpText;
             document.getElementById('footerText').innerHTML = t.footer;
             document.getElementById('rulesModalTitle').innerHTML = t.rulesTitle;
+            // 模式按钮文字
             document.getElementById('modeFree').innerHTML = t.free;
             document.getElementById('modeReflect1').innerHTML = t.reflect1;
             document.getElementById('modeReflect2').innerHTML = t.reflect2;
@@ -318,6 +327,11 @@
             document.getElementById('modeAngle').innerHTML = t.angle;
             document.getElementById('modeChord').innerHTML = t.chord;
             document.getElementById('challengeName').innerText = t[currentMode] || t.free;
+            // 工具栏按钮
+            document.getElementById('themeBtn').innerHTML = t.theme;
+            document.getElementById('rulesBtn').innerHTML = t.rules;
+            document.getElementById('undoBtn').innerHTML = t.undo;
+            // 更新规则模态框内容
             updateRulesModal();
         }
         
@@ -410,7 +424,7 @@
                 let cp = { x: circle.x + circle.r*nx, y: circle.y + circle.r*ny };
                 let tx = -ny, ty = nx;
                 collisionEffect = { active: true, point: cp, normal: {x:nx,y:ny}, tangent:{x:tx,y:ty}, timer: 90, incAngle: inc, refAngle: ref };
-                lastCollisionGeom = collisionEffect;   // 存储用于常驻显示
+                lastCollisionGeom = collisionEffect;
                 if(isMoving && !lastCollisionFrame){
                     currentCollisions++;
                     if(document.getElementById('currentCollisionCount')) document.getElementById('currentCollisionCount').innerText = currentCollisions;
