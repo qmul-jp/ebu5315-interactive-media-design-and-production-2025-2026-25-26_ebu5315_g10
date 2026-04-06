@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错题本 - 圆几何测验</title>
+    <!-- 引用外部CSS文件 -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <nav class="breadcrumb">
+                <a href="index.html">首页</a> &gt;
+                <span id="breadcrumb-text">错题本</span>
+            </nav>
+            <button id="back-btn" class="btn btn-primary">返回测验</button>
+        </div>
+        <div class="control-group">
+            <div class="control-item">
+                <label id="font-label" for="font-select">字体大小：</label>
+                <select id="font-select" class="control-select">
+                    <option value="sm">小</option>
+                    <option value="md" selected>中</option>
+                    <option value="lg">大</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label id="lang-label" for="lang-select">语言：</label>
+                <select id="lang-select" class="control-select">
+                    <option value="zh" selected>中文</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+        </div>
+    </header>
+    <main class="wrong-book-container">
+        <h1 id="wrong-title">圆几何测验 - 错题本</h1>
+        <div class="wrong-book-actions">
+            <button id="clear-all-btn" class="btn btn-danger">清空所有错题</button>
+        </div>
+        <div id="wrong-list" class="wrong-list"></div>
+        <div id="empty-tip" class="empty-tip hidden">暂无错题，继续刷题积累吧！</div>
+    </main>
+    <footer>
+        <p id="footer-text">EBU5315 交互式媒体设计 | GCSE 圆几何学习</p>
+    </footer>
+    <script>
+        const i18n = {
+            zh: {
+                home: "首页",
+                breadcrumb: "错题本",
+                backBtn: "返回测验",
+                fontLabel: "字体大小：",
+                fontSmall: "小",
+                fontMedium: "中",
+                fontLarge: "大",
+                langLabel: "语言：",
+                wrongTitle: "圆几何测验 - 错题本",
+                clearAllBtn: "清空所有错题",
+                emptyTip: "暂无错题，继续刷题积累吧！",
+                wrongNumPrefix: "错题",
+                difficultyEntry: "入门",
+                difficultyBasic: "基础",
+                difficultyAdvanced: "进阶",
+                difficultyChallenge: "拔高",
+                yourAnswer: "你的答案：",
+                correctAnswer: "正确答案：",
+                feedback: "解析：",
+                deleteConfirm: "确定要删除这道错题吗？",
+                clearConfirm: "确定要清空所有错题吗？此操作不可恢复！",
+                footer: "EBU5315 交互式媒体设计 | GCSE 圆几何学习"
+            },
+            en: {
+                home: "Home",
+                breadcrumb: "Wrong Answer Book",
+                backBtn: "Back to Quiz",
+                fontLabel: "Font Size:",
+                fontSmall: "Small",
+                fontMedium: "Medium",
+                fontLarge: "Large",
+                langLabel: "Language:",
+                wrongTitle: "Circle Geometry Quiz - Wrong Answer Book",
+                clearAllBtn: "Clear All Wrong Answers",
+                emptyTip: "No wrong answers yet, keep practicing!",
+                wrongNumPrefix: "Wrong Answer",
+                difficultyEntry: "Entry",
+                difficultyBasic: "Basic",
+                difficultyAdvanced: "Advanced",
+                difficultyChallenge: "Challenge",
+                yourAnswer: "Your Answer:",
+                correctAnswer: "Correct Answer:",
+                feedback: "Explanation:",
+                deleteConfirm: "Are you sure to delete this wrong answer?",
+                clearConfirm: "Are you sure to clear all wrong answers? This action cannot be undone!",
+                footer: "EBU5315 Interactive Media Design | GCSE Circle Geometry Learning"
+            }
+        };
+        let currentLang = 'zh';
+        let wrongQuestions = [];
+        document.addEventListener('DOMContentLoaded', function() {
+            loadWrongQuestions();
+            initFontControl();
+            initLangControl();
+            initBackBtn();
+            initClearAllBtn();
+            renderWrongList();
+        });
+        function loadWrongQuestions() {
+            wrongQuestions = JSON.parse(localStorage.getItem('quizWrongQuestions') || '[]');
+        }
+        function initFontControl() {
+            const fs = document.getElementById('font-select');
+            fs.addEventListener('change', function(){
+                document.body.style.fontSize = `var(--font-size-${this.value})`;
+                localStorage.setItem('quizFontSize', this.value);
+            });
+            const f = localStorage.getItem('quizFontSize');
+            if(f) {
+                fs.value = f;
+                document.body.style.fontSize = `var(--font-size-${f})`;
+            }
+        }
+        function initLangControl() {
+            const ls = document.getElementById('lang-select');
+            function updateLang(lang){
+                currentLang = lang;
+                document.querySelector('.breadcrumb a').textContent = i18n[lang].home;
+                document.getElementById('breadcrumb-text').textContent = i18n[lang].breadcrumb;
+                document.getElementById('back-btn').textContent = i18n[lang].backBtn;
+                document.getElementById('font-label').textContent = i18n[lang].fontLabel;
+                document.getElementById('lang-label').textContent = i18n[lang].langLabel;
+                document.getElementById('wrong-title').textContent = i18n[lang].wrongTitle;
+                document.getElementById('clear-all-btn').textContent = i18n[lang].clearAllBtn;
+                document.getElementById('empty-tip').textContent = i18n[lang].emptyTip;
+                document.getElementById('footer-text').textContent = i18n[lang].footer;
+                // 字体选项
+                const fontOpts = document.querySelectorAll('#font-select option');
+                fontOpts[0].textContent = i18n[lang].fontSmall;
+                fontOpts[1].textContent = i18n[lang].fontMedium;
+                fontOpts[2].textContent = i18n[lang].fontLarge;
+                localStorage.setItem('quizLang', lang);
+                renderWrongList();
+            }
+            ls.addEventListener('change', () => updateLang(ls.value));
+            const l = localStorage.getItem('quizLang');
+            if(l) {
+                ls.value = l;
+                updateLang(l);
+            }
+        }
+        function initBackBtn() {
+            document.getElementById('back-btn').addEventListener('click', () => window.location.href = 'quiz.html');
+        }
+        function initClearAllBtn() {
+            document.getElementById('clear-all-btn').addEventListener('click', () => {
+                if(confirm(i18n[currentLang].clearConfirm)) {
+                    localStorage.removeItem('quizWrongQuestions');
+                    wrongQuestions = [];
+                    renderWrongList();
+                }
+            });
+        }
+        function deleteWrongQuestion(id) {
+            if(confirm(i18n[currentLang].deleteConfirm)) {
+                wrongQuestions = wrongQuestions.filter(q => q.id !== id);
+                localStorage.setItem('quizWrongQuestions', JSON.stringify(wrongQuestions));
+                renderWrongList();
+            }
+        }
+        function getDifficultyText(difficulty) {
+            switch(difficulty) {
+                case 'entry': return i18n[currentLang].difficultyEntry;
+                case 'basic': return i18n[currentLang].difficultyBasic;
+                case 'advanced': return i18n[currentLang].difficultyAdvanced;
+                case 'challenge': return i18n[currentLang].difficultyChallenge;
+                default: return '';
+            }
+        }
+        function renderWrongList() {
+            const list = document.getElementById('wrong-list');
+            const empty = document.getElementById('empty-tip');
+            list.innerHTML = '';
+            if(wrongQuestions.length === 0) {
+                list.classList.add('hidden');
+                empty.classList.remove('hidden');
+                return;
+            }
+            list.classList.remove('hidden');
+            empty.classList.add('hidden');
+            wrongQuestions.forEach((q, i) => {
+                const d = q[currentLang];
+                const card = document.createElement('div');
+                card.className = 'wrong-card';
+                card.innerHTML = `
+                    <button class="delete-btn" data-id="${q.id}">×</button>
+                    <h3>${i18n[currentLang].wrongNumPrefix} ${i+1}</h3>
+                    <span class="difficulty-tag">${getDifficultyText(q.difficulty)}</span>
+                    <p>${d.question}</p>
+                    <div class="option-group">
+                        <div class="option user-answer">${i18n[currentLang].yourAnswer}${d.options[q.userAnswer]}</div>
+                        <div class="option correct-answer">${i18n[currentLang].correctAnswer}${d.options[d.answer]}</div>
+                    </div>
+                    <div class="feedback">${i18n[currentLang].feedback}${d.feedback}</div>
+                `;
+                card.querySelector('.delete-btn').addEventListener('click', function() {
+                    deleteWrongQuestion(parseInt(this.dataset.id));
+                });
+                list.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
