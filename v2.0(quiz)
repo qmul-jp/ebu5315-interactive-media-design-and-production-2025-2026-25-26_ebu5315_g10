@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBU5315 Quiz - Circle Geometry</title>
+    <!-- 嵌入CSS样式（原style.css内容） -->
+    <style>
+        /* 全局样式 - 色盲友好配色（蓝/橙/灰为主，避免红绿色盲混淆） */
+        :root {
+            --primary-color: #2563eb;    /* 主色-蓝色 */
+            --success-color: #f97316;    /* 正确-橙色（替代绿色，适配红绿色盲） */
+            --error-color: #ef4444;      /* 错误-红色（高对比度） */
+            --bg-color: #f8fafc;         /* 背景色 */
+            --text-color: #1e293b;       /* 文字色 */
+            --card-bg: #ffffff;          /* 卡片背景 */
+            --border-color: #e2e8f0;     /* 边框色 */
+            /* 字体大小变量 */
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-size-lg: 18px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+            transition: font-size 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: var(--font-size-md);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 头部导航 - 无logo，仅保留面包屑+字体调节 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* 面包屑导航 */
+        .breadcrumb {
+            font-size: 0.9em;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* 字体大小调节 */
+        .font-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .font-control button {
+            padding: 4px 10px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .font-control button.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 答题容器 */
+        .quiz-container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .quiz-container h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* 刷题模式 */
+        .quiz-mode {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .mode-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .topic-select {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        /* 题目卡片 */
+        .question-card {
+            margin-top: 20px;
+        }
+
+        .question-title {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .question-title p {
+            font-size: 1.1em;
+            margin-top: 8px;
+        }
+
+        /* 选项样式 */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .option-item:hover {
+            background-color: #f1f5f9;
+        }
+
+        .option-item.selected {
+            background-color: #e0e7ff;
+            border-color: var(--primary-color);
+        }
+
+        /* 按钮样式 */
+        .submit-btn, .next-btn {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .submit-btn:hover, .next-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .next-btn {
+            margin-top: 10px;
+        }
+
+        /* 反馈区域 */
+        .feedback-area {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .feedback-success {
+            background-color: #fff7ed;
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .feedback-error {
+            background-color: #fef2f2;
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        /* 辅助类 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 响应式适配（移动端） */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .quiz-container {
+                padding: 20px;
+            }
+
+            .question-title p {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部导航（无logo/标题，保留面包屑+字体调节） -->
+    <header>
+        <!-- 面包屑导航（课程硬性要求） -->
+        <nav class="breadcrumb">
+            <a href="../index.html">Home</a> &gt; 
+            <a href="index.html">Quiz</a> &gt; 
+            <span>Basic Practice</span>
+        </nav>
+        
+        <!-- 字体大小调节（包容性设计-V1必做） -->
+        <div class="font-control">
+            <span>字体大小：</span>
+            <button id="font-sm">小</button>
+            <button id="font-md" class="active">中</button>
+            <button id="font-lg">大</button>
+        </div>
+    </header>
+
+    <!-- 答题区域 -->
+    <main class="quiz-container">
+        <h1>Circle Geometry Quiz (GCSE)</h1>
+        
+        <!-- 刷题模式选择 -->
+        <div class="quiz-mode">
+            <button id="random-mode" class="mode-btn active">随机刷题</button>
+            <button id="topic-mode" class="mode-btn">按考点刷题</button>
+            <!-- 考点选择（默认隐藏，按考点模式显示） -->
+            <select id="topic-select" class="topic-select hidden">
+                <option value="all">所有考点</option>
+                <option value="circumferential_angle">圆周角定理</option>
+                <option value="tangent_theorem">切线定理</option>
+                <option value="chord_theorem">弦定理</option>
+            </select>
+        </div>
+
+        <!-- 题目展示区域 -->
+        <div class="question-card">
+            <div class="question-title">
+                <span id="question-num">第1题</span> / <span id="total-questions">10</span>
+                <p id="question-content">加载中...</p>
+            </div>
+            <!-- 选项区域 -->
+            <div id="options-container" class="options-container">
+                <!-- 选项由JS动态生成 -->
+            </div>
+            <!-- 提交按钮 -->
+            <button id="submit-answer" class="submit-btn">提交答案</button>
+            <!-- 答题反馈区域 -->
+            <div id="feedback-area" class="feedback-area hidden"></div>
+            <!-- 下一题按钮（默认隐藏） -->
+            <button id="next-question" class="next-btn hidden">下一题</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>EBU5315 Interactive Media Design | GCSE Circle Geometry Learning</p>
+    </footer>
+
+    <!-- 嵌入JS逻辑（原script.js内容） -->
+    <script>
+        // 1. GCSE圆几何基础题库（V1-10道基础题）
+        const quizQuestions = [
+            {
+                id: 1,
+                topic: "circumferential_angle",
+                question: "What is the size of the angle subtended by a diameter at the circumference of a circle?",
+                options: [
+                    "30°",
+                    "60°",
+                    "90°",
+                    "180°"
+                ],
+                answer: 2, // 索引从0开始，对应90°
+                feedback: "Correct! The angle subtended by a diameter at the circumference is always a right angle (90°) - this is Thales' theorem."
+            },
+            {
+                id: 2,
+                topic: "tangent_theorem",
+                question: "What is the angle between a tangent and a radius at the point of contact?",
+                options: [
+                    "45°",
+                    "90°",
+                    "120°",
+                    "180°"
+                ],
+                answer: 1,
+                feedback: "Correct! The tangent to a circle is perpendicular to the radius at the point of contact (90°)."
+            },
+            {
+                id: 3,
+                topic: "circumferential_angle",
+                question: "Angles subtended by the same arc at the circumference are?",
+                options: [
+                    "Equal",
+                    "Double",
+                    "Half",
+                    "Supplementary"
+                ],
+                answer: 0,
+                feedback: "Correct! Angles subtended by the same arc at the circumference of a circle are equal."
+            },
+            {
+                id: 4,
+                topic: "chord_theorem",
+                question: "The perpendicular from the centre of a circle to a chord?",
+                options: [
+                    "Bisects the chord",
+                    "Is parallel to the chord",
+                    "Is equal to the chord",
+                    "Is twice the length of the chord"
+                ],
+                answer: 0,
+                feedback: "Correct! The perpendicular from the centre of a circle to a chord bisects the chord."
+            },
+            {
+                id: 5,
+                topic: "tangent_theorem",
+                question: "Two tangents drawn from the same external point to a circle are?",
+                options: [
+                    "Unequal in length",
+                    "Equal in length",
+                    "Perpendicular to each other",
+                    "Parallel to each other"
+                ],
+                answer: 1,
+                feedback: "Correct! Two tangents from the same external point to a circle are equal in length."
+            },
+            {
+                id: 6,
+                topic: "circumferential_angle",
+                question: "The angle at the centre of a circle is how many times the angle at the circumference subtended by the same arc?",
+                options: [
+                    "1 time",
+                    "2 times",
+                    "3 times",
+                    "4 times"
+                ],
+                answer: 1,
+                feedback: "Correct! The angle at the centre is twice the angle at the circumference for the same arc."
+            },
+            {
+                id: 7,
+                topic: "chord_theorem",
+                question: "If two chords in a circle are equal in length, they are?",
+                options: [
+                    "Equidistant from the centre",
+                    "Parallel to each other",
+                    "Perpendicular to each other",
+                    "At different distances from the centre"
+                ],
+                answer: 0,
+                feedback: "Correct! Equal chords in a circle are equidistant from the centre."
+            },
+            {
+                id: 8,
+                topic: "circumferential_angle",
+                question: "Angles in the same segment of a circle are?",
+                options: [
+                    "Supplementary",
+                    "Complementary",
+                    "Equal",
+                    "Unequal"
+                ],
+                answer: 2,
+                feedback: "Correct! Angles in the same segment of a circle are equal."
+            },
+            {
+                id: 9,
+                topic: "tangent_theorem",
+                question: "What is the name of the line that touches a circle at only one point?",
+                options: [
+                    "Chord",
+                    "Radius",
+                    "Tangent",
+                    "Diameter"
+                ],
+                answer: 2,
+                feedback: "Correct! A tangent is a straight line that touches a circle at only one point."
+            },
+            {
+                id: 10,
+                topic: "chord_theorem",
+                question: "The longest chord in a circle is the?",
+                options: [
+                    "Radius",
+                    "Diameter",
+                    "Tangent",
+                    "Secant"
+                ],
+                answer: 1,
+                feedback: "Correct! The diameter is the longest chord in a circle (it passes through the centre)."
+            }
+        ];
+
+        // 2. 全局变量
+        let currentQuestions = []; // 当前刷题的题目列表
+        let currentQuestionIndex = 0; // 当前题目索引
+        let selectedOptionIndex = -1; // 选中的选项索引
+
+        // 3. 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化字体大小调节
+            initFontControl();
+            // 初始化刷题模式
+            initQuizMode();
+            // 初始化随机刷题（默认模式）
+            loadRandomQuestions();
+            // 加载当前题目
+            loadCurrentQuestion();
+            // 绑定提交答案事件
+            bindSubmitEvent();
+            // 绑定下一题事件
+            bindNextQuestionEvent();
+            // 绑定刷新提示（容错性）
+            bindBeforeUnloadEvent();
+        });
+
+        // 4. 初始化字体大小调节（包容性设计）
+        function initFontControl() {
+            const fontSm = document.getElementById('font-sm');
+            const fontMd = document.getElementById('font-md');
+            const fontLg = document.getElementById('font-lg');
+            const body = document.body;
+
+            // 小字体
+            fontSm.addEventListener('click', function() {
+                body.style.fontSize = 'var(--font-size-sm)';
+                // 切换激活状态
+                [fontSm, fontMd, fontLg].forEach(btn => btn.classList.remove('active'));
+                fontSm.classList.add('active');
+            });
+
+            // 中字体（默认）
+            fontMd.addEventListener('click', function() {
+                body.style.fontSize = 'var(--font-size-md)';
+                [fontSm, fontMd, fontLg].forEach(btn => btn.classList.remove('active'));
+                fontMd.classList.add('active');
+            });
+
+            // 大字体
+            fontLg.addEventListener('click', function() {
+                body.style.fontSize = 'var(--font-size-lg)';
+                [fontSm, fontMd, fontLg].forEach(btn => btn.classList.remove('active'));
+                fontLg.classList.add('active');
+            });
+        }
+
+        // 5. 初始化刷题模式
+        function initQuizMode() {
+            const randomMode = document.getElementById('random-mode');
+            const topicMode = document.getElementById('topic-mode');
+            const topicSelect = document.getElementById('topic-select');
+
+            // 随机刷题模式
+            randomMode.addEventListener('click', function() {
+                [randomMode, topicMode].forEach(btn => btn.classList.remove('active'));
+                randomMode.classList.add('active');
+                topicSelect.classList.add('hidden');
+                loadRandomQuestions();
+                currentQuestionIndex = 0;
+                loadCurrentQuestion();
+            });
+
+            // 按考点刷题模式
+            topicMode.addEventListener('click', function() {
+                [randomMode, topicMode].forEach(btn => btn.classList.remove('active'));
+                topicMode.classList.add('active');
+                topicSelect.classList.remove('hidden');
+                // 加载对应考点题目
+                loadTopicQuestions(topicSelect.value);
+                currentQuestionIndex = 0;
+                loadCurrentQuestion();
+            });
+
+            // 考点选择变化
+            topicSelect.addEventListener('change', function() {
+                loadTopicQuestions(this.value);
+                currentQuestionIndex = 0;
+                loadCurrentQuestion();
+            });
+        }
+
+        // 6. 加载随机题目
+        function loadRandomQuestions() {
+            // 浅拷贝题库，避免修改原数组
+            currentQuestions = [...quizQuestions];
+            // 随机打乱
+            currentQuestions.sort(() => Math.random() - 0.5);
+            // 更新总题数
+            document.getElementById('total-questions').textContent = currentQuestions.length;
+        }
+
+        // 7. 加载指定考点题目
+        function loadTopicQuestions(topic) {
+            if (topic === 'all') {
+                currentQuestions = [...quizQuestions];
+            } else {
+                currentQuestions = quizQuestions.filter(q => q.topic === topic);
+            }
+            // 更新总题数
+            document.getElementById('total-questions').textContent = currentQuestions.length;
+        }
+
+        // 8. 加载当前题目
+        function loadCurrentQuestion() {
+            if (currentQuestions.length === 0) {
+                document.getElementById('question-content').textContent = 'No questions available for this topic!';
+                document.getElementById('options-container').innerHTML = '';
+                document.getElementById('submit-answer').disabled = true;
+                return;
+            }
+
+            const currentQuestion = currentQuestions[currentQuestionIndex];
+            // 更新题目编号和内容
+            document.getElementById('question-num').textContent = `第${currentQuestionIndex + 1}题`;
+            document.getElementById('question-content').textContent = currentQuestion.question;
+
+            // 生成选项
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            currentQuestion.options.forEach((option, index) => {
+                const optionItem = document.createElement('div');
+                optionItem.className = 'option-item';
+                optionItem.dataset.index = index;
+                optionItem.textContent = option;
+
+                // 选项点击事件
+                optionItem.addEventListener('click', function() {
+                    // 移除所有选中状态
+                    document.querySelectorAll('.option-item').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    // 添加当前选中状态
+                    this.classList.add('selected');
+                    selectedOptionIndex = index;
+                });
+
+                optionsContainer.appendChild(optionItem);
+            });
+
+            // 重置状态
+            selectedOptionIndex = -1;
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('next-question').classList.add('hidden');
+            document.getElementById('submit-answer').disabled = false;
+        }
+
+        // 9. 绑定提交答案事件（容错+即时反馈）
+        function bindSubmitEvent() {
+            const submitBtn = document.getElementById('submit-answer');
+            const feedbackArea = document.getElementById('feedback-area');
+            const nextBtn = document.getElementById('next-question');
+
+            submitBtn.addEventListener('click', function() {
+                // 容错：未选择选项
+                if (selectedOptionIndex === -1) {
+                    feedbackArea.textContent = 'Please select an option first!';
+                    feedbackArea.className = 'feedback-area feedback-error';
+                    feedbackArea.classList.remove('hidden');
+                    return;
+                }
+
+                const currentQuestion = currentQuestions[currentQuestionIndex];
+                // 判断答案是否正确
+                if (selectedOptionIndex === currentQuestion.answer) {
+                    // 正确反馈
+                    feedbackArea.textContent = currentQuestion.feedback;
+                    feedbackArea.className = 'feedback-area feedback-success';
+                } else {
+                    // 错误反馈（基础提示，非完整解析）
+                    feedbackArea.textContent = `Incorrect! The correct answer is: ${currentQuestion.options[currentQuestion.answer]}. Hint: Review the ${currentQuestion.topic.replace('_', ' ')} theorem.`;
+                    feedbackArea.className = 'feedback-area feedback-error';
+                }
+
+                // 显示反馈和下一题按钮
+                feedbackArea.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
+                // 禁用提交按钮
+                submitBtn.disabled = true;
+            });
+        }
+
+        // 10. 绑定下一题事件
+        function bindNextQuestionEvent() {
+            const nextBtn = document.getElementById('next-question');
+            nextBtn.addEventListener('click', function() {
+                // 下一题索引
+                currentQuestionIndex++;
+                // 判断是否还有题目
+                if (currentQuestionIndex < currentQuestions.length) {
+                    loadCurrentQuestion();
+                } else {
+                    // 所有题目完成
+                    document.getElementById('question-content').textContent = 'Congratulations! You have completed all questions.';
+                    document.getElementById('options-container').innerHTML = '';
+                    document.getElementById('submit-answer').disabled = true;
+                    nextBtn.classList.add('hidden');
+                    document.getElementById('feedback-area').classList.add('hidden');
+                }
+            });
+        }
+
+        // 11. 绑定刷新提示（容错性：防止误操作丢失进度）
+        function bindBeforeUnloadEvent() {
+            window.addEventListener('beforeunload', function(e) {
+                // 取消默认行为
+                e.preventDefault();
+                // 自定义提示（不同浏览器显示方式不同）
+                e.returnValue = 'Your quiz progress will be lost! Are you sure you want to leave?';
+                return e.returnValue;
+            });
+        }
+    </script>
+</body>
+</html>
