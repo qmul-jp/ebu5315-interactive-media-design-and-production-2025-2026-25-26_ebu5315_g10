@@ -1,647 +1,916 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EBU5315 Quiz - Circle Geometry</title>
-    <!-- 嵌入CSS样式（原style.css内容） -->
-    <style>
-        /* 全局样式 - 色盲友好配色（蓝/橙/灰为主，避免红绿色盲混淆） */
-        :root {
-            --primary-color: #2563eb;    /* 主色-蓝色 */
-            --success-color: #f97316;    /* 正确-橙色（替代绿色，适配红绿色盲） */
-            --error-color: #ef4444;      /* 错误-红色（高对比度） */
-            --bg-color: #f8fafc;         /* 背景色 */
-            --text-color: #1e293b;       /* 文字色 */
-            --card-bg: #ffffff;          /* 卡片背景 */
-            --border-color: #e2e8f0;     /* 边框色 */
-            /* 字体大小变量 */
-            --font-size-sm: 14px;
-            --font-size-md: 16px;
-            --font-size-lg: 18px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
-            transition: font-size 0.2s ease;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-size: var(--font-size-md);
-            line-height: 1.6;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* 头部导航 - 无logo，仅保留面包屑+字体调节 */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        /* 面包屑导航 */
-        .breadcrumb {
-            font-size: 0.9em;
-        }
-
-        .breadcrumb a {
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-
-        .breadcrumb a:hover {
-            text-decoration: underline;
-        }
-
-        /* 字体大小调节 */
-        .font-control {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .font-control button {
-            padding: 4px 10px;
-            border: 1px solid var(--border-color);
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .font-control button.active {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        /* 答题容器 */
-        .quiz-container {
-            background-color: var(--card-bg);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .quiz-container h1 {
-            color: var(--primary-color);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        /* 刷题模式 */
-        .quiz-mode {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .mode-btn {
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .mode-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .topic-select {
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-        }
-
-        /* 题目卡片 */
-        .question-card {
-            margin-top: 20px;
-        }
-
-        .question-title {
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .question-title p {
-            font-size: 1.1em;
-            margin-top: 8px;
-        }
-
-        /* 选项样式 */
-        .options-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .option-item {
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        .option-item:hover {
-            background-color: #f1f5f9;
-        }
-
-        .option-item.selected {
-            background-color: #e0e7ff;
-            border-color: var(--primary-color);
-        }
-
-        /* 按钮样式 */
-        .submit-btn, .next-btn {
-            padding: 10px 20px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-
-        .submit-btn:hover, .next-btn:hover {
-            background-color: #1d4ed8;
-        }
-
-        .next-btn {
-            margin-top: 10px;
-        }
-
-        /* 反馈区域 */
-        .feedback-area {
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-
-        .feedback-success {
-            background-color: #fff7ed;
-            border: 1px solid var(--success-color);
-            color: var(--success-color);
-        }
-
-        .feedback-error {
-            background-color: #fef2f2;
-            border: 1px solid var(--error-color);
-            color: var(--error-color);
-        }
-
-        /* 辅助类 */
-        .hidden {
-            display: none !important;
-        }
-
-        /* 响应式适配（移动端） */
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .quiz-container {
-                padding: 20px;
-            }
-
-            .question-title p {
-                font-size: 1em;
-            }
-        }
-    </style>
+    <title>圆几何测验 - GCSE</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- 头部导航（无logo/标题，保留面包屑+字体调节） -->
     <header>
-        <!-- 面包屑导航（课程硬性要求） -->
-        <nav class="breadcrumb">
-            <a href="../index.html">Home</a> &gt; 
-            <a href="index.html">Quiz</a> &gt; 
-            <span>Basic Practice</span>
-        </nav>
-        
-        <!-- 字体大小调节（包容性设计-V1必做） -->
-        <div class="font-control">
-            <span>字体大小：</span>
-            <button id="font-sm">小</button>
-            <button id="font-md" class="active">中</button>
-            <button id="font-lg">大</button>
+        <div class="header-left">
+            <nav class="breadcrumb">
+                <a href="index.html">首页</a> &gt;
+                <span id="breadcrumb-text">圆几何测验</span>
+            </nav>
+            <button id="wrong-book-btn" class="btn btn-primary">错题本</button>
+            <button id="progress-btn" class="btn">我的进度</button>
+        </div>
+        <div class="control-group">
+            <div class="control-item">
+                <label id="font-label" for="font-select">字体大小：</label>
+                <select id="font-select" class="control-select">
+                    <option value="sm">小</option>
+                    <option value="md" selected>中</option>
+                    <option value="lg">大</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label id="lang-label" for="lang-select">语言：</label>
+                <select id="lang-select" class="control-select">
+                    <option value="zh" selected>中文</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
         </div>
     </header>
 
-    <!-- 答题区域 -->
     <main class="quiz-container">
-        <h1>Circle Geometry Quiz (GCSE)</h1>
-        
-        <!-- 刷题模式选择 -->
+        <h1 id="quiz-title">圆几何测验（GCSE水平）</h1>
         <div class="quiz-mode">
             <button id="random-mode" class="mode-btn active">随机刷题</button>
             <button id="topic-mode" class="mode-btn">按考点刷题</button>
-            <!-- 考点选择（默认隐藏，按考点模式显示） -->
             <select id="topic-select" class="topic-select hidden">
-                <option value="all">所有考点</option>
-                <option value="circumferential_angle">圆周角定理</option>
-                <option value="tangent_theorem">切线定理</option>
-                <option value="chord_theorem">弦定理</option>
+                <option value="all" id="topic-all">所有考点</option>
+                <option value="area" id="topic-area">圆的面积</option>
+                <option value="circumference" id="topic-circumference">圆的周长</option>
+                <option value="diameter" id="topic-diameter">直径与半径</option>
+                <option value="tangent" id="topic-tangent">切线定理</option>
+                <option value="chord" id="topic-chord">弦定理</option>
+                <option value="circumferential_angle" id="topic-angle">圆周角定理</option>
+                <option value="cyclic_quadrilateral" id="topic-quad">内接四边形</option>
+                <option value="perpendicular_radius" id="topic-perp">垂径定理</option>
+            </select>
+            <select id="difficulty-select" class="difficulty-select">
+                <option value="all" id="diff-all">全部难度</option>
+                <option value="entry" id="diff-entry">入门</option>
+                <option value="basic" id="diff-basic">基础</option>
+                <option value="advanced" id="diff-advanced">进阶</option>
+                <option value="challenge" id="diff-challenge">拔高</option>
             </select>
         </div>
 
-        <!-- 题目展示区域 -->
         <div class="question-card">
             <div class="question-title">
-                <span id="question-num">第1题</span> / <span id="total-questions">10</span>
-                <p id="question-content">加载中...</p>
+                <div class="question-counter" id="question-counter">第1题 / 共53题</div>
+                <p id="question-content">直径在圆周上所对的角的大小是多少？</p>
             </div>
-            <!-- 选项区域 -->
             <div id="options-container" class="options-container">
-                <!-- 选项由JS动态生成 -->
+                <div class="option-item" data-index="0">30°</div>
+                <div class="option-item" data-index="1">60°</div>
+                <div class="option-item" data-index="2">90°</div>
+                <div class="option-item" data-index="3">180°</div>
             </div>
-            <!-- 提交按钮 -->
-            <button id="submit-answer" class="submit-btn">提交答案</button>
-            <!-- 答题反馈区域 -->
-            <div id="feedback-area" class="feedback-area hidden"></div>
-            <!-- 下一题按钮（默认隐藏） -->
-            <button id="next-question" class="next-btn hidden">下一题</button>
+            <button id="submit-answer" class="btn btn-primary">提交答案</button>
+            <div id="feedback-area" class="feedback-area"></div>
+            <button id="next-question" class="btn hidden">下一题</button>
         </div>
     </main>
 
+    <!-- 升级动画层 -->
+    <div id="upgrade-overlay" class="upgrade-overlay">
+        <div class="upgrade-content">
+            <div class="upgrade-title" id="upgrade-title">恭喜升级！</div>
+            <div class="upgrade-subtitle" id="upgrade-subtitle">解锁更多题目挑战</div>
+        </div>
+    </div>
+
+    <!-- 我的进度弹窗 -->
+    <div id="progress-modal" class="progress-modal">
+        <div class="progress-content">
+            <h2 id="progress-title">我的学习进度</h2>
+            <div class="progress-item">
+                <span id="level-label">当前等级：</span>
+                <span id="current-level">圆论萌新</span>
+            </div>
+            <div class="progress-item">
+                <span id="score-label">当前积分：</span>
+                <span id="current-score">0</span> / <span id="next-level-score">30</span>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="progress-item">
+                <span id="accuracy-label">总体正确率：</span>
+                <span id="total-accuracy">0%</span>
+            </div>
+            <button id="close-progress" class="btn btn-primary">关闭</button>
+        </div>
+    </div>
+
+    <!-- 错题本弹窗（与进度弹窗完全一致的卡片模式） -->
+    <div id="wrong-book-modal" class="progress-modal">
+        <div class="progress-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <h2 id="wrong-book-title">错题本</h2>
+            <div class="wrong-book-actions" style="margin-bottom: 20px; text-align: right;">
+                <button id="clear-all-wrong" class="btn btn-danger">清空所有错题</button>
+            </div>
+            <div id="wrong-list" class="wrong-list"></div>
+            <div id="empty-wrong-tip" class="empty-tip hidden">暂无错题，继续刷题积累吧！</div>
+            <button id="close-wrong-book" class="btn btn-primary" style="margin-top: 20px;">关闭</button>
+        </div>
+    </div>
+
+    <!-- 音频预留（已闭合标签） -->
+    <audio id="upgradeSound" src="upgrade_success.mp3" preload="metadata">
+
     <footer>
-        <p>EBU5315 Interactive Media Design | GCSE Circle Geometry Learning</p>
+        <p id="footer-text">EBU5315 交互式媒体设计 | GCSE 圆几何学习</p>
     </footer>
 
-    <!-- 嵌入JS逻辑（原script.js内容） -->
     <script>
-        // 1. GCSE圆几何基础题库（V1-10道基础题）
-        const quizQuestions = [
-            {
-                id: 1,
-                topic: "circumferential_angle",
-                question: "What is the size of the angle subtended by a diameter at the circumference of a circle?",
-                options: [
-                    "30°",
-                    "60°",
-                    "90°",
-                    "180°"
-                ],
-                answer: 2, // 索引从0开始，对应90°
-                feedback: "Correct! The angle subtended by a diameter at the circumference is always a right angle (90°) - this is Thales' theorem."
+        // 国际化配置（完整53题中英双语题库）
+        const i18n = {
+            zh: {
+                home: "首页",
+                breadcrumb: "圆几何测验",
+                wrongBookBtn: "错题本",
+                progressBtn: "我的进度",
+                fontLabel: "字体大小：",
+                fontSmall: "小",
+                fontMedium: "中",
+                fontLarge: "大",
+                langLabel: "语言：",
+                quizTitle: "圆几何测验（GCSE水平）",
+                randomMode: "随机刷题",
+                topicMode: "按考点刷题",
+                topicAll: "所有考点",
+                topicArea: "圆的面积",
+                topicCircumference: "圆的周长",
+                topicDiameter: "直径与半径",
+                topicTangent: "切线定理",
+                topicChord: "弦定理",
+                topicAngle: "圆周角定理",
+                topicQuad: "内接四边形",
+                topicPerp: "垂径定理",
+                diffAll: "全部难度",
+                diffEntry: "入门",
+                diffBasic: "基础",
+                diffAdvanced: "进阶",
+                diffChallenge: "拔高",
+                submitBtn: "提交答案",
+                nextBtn: "下一题",
+                footer: "EBU5315 交互式媒体设计 | GCSE 圆几何学习",
+                selectOptionTip: "请选择一个选项！",
+                quizCompleted: "本次刷题完成！可以切换难度或考点继续练习",
+                questionCounter: (current, total) => `第${current}题 / 共${total}题`,
+                levelNovice: "圆论萌新",
+                levelBeginner: "圆论入门",
+                levelAdvanced: "圆论进阶",
+                levelMaster: "圆论大师",
+                progressTitle: "我的学习进度",
+                levelLabel: "当前等级：",
+                scoreLabel: "当前积分：",
+                accuracyLabel: "总体正确率：",
+                closeBtn: "关闭",
+                upgradeTitle: "恭喜升级为",
+                upgradeSubtitle: "解锁更多精彩题目！",
+                // 错题本国际化
+                wrongBookTitle: "错题本",
+                clearAllBtn: "清空所有错题",
+                emptyTip: "暂无错题，继续刷题积累吧！",
+                wrongNumPrefix: "错题",
+                difficultyEntry: "入门",
+                difficultyBasic: "基础",
+                difficultyAdvanced: "进阶",
+                difficultyChallenge: "拔高",
+                yourAnswer: "你的答案：",
+                correctAnswer: "正确答案：",
+                feedback: "解析：",
+                deleteConfirm: "确定要删除这道错题吗？",
+                clearConfirm: "确定要清空所有错题吗？此操作不可恢复！",
+                questions: [
+                    // 入门级（8道）
+                    {id:1,difficulty:"entry",topic:"circumferential_angle",question:"直径在圆周上所对的角的大小是多少？",options:["30°","60°","90°","180°"],answer:2,feedback:"正确！直径所对的圆周角是直角（90°）。"},
+                    {id:2,difficulty:"entry",topic:"tangent",question:"圆的切线与过切点的半径的夹角是多少？",options:["30°","60°","90°","180°"],answer:2,feedback:"正确！圆的切线垂直于过切点的半径，夹角为90°。"},
+                    {id:3,difficulty:"entry",topic:"chord",question:"垂直于弦的直径会如何分割弦？",options:["平分弦","三等分弦","四等分弦","不分割"],answer:0,feedback:"正确！垂直于弦的直径平分弦且平分弦所对的两条弧。"},
+                    {id:4,difficulty:"entry",topic:"area",question:"圆的面积公式是什么？",options:["πr","2πr","πr²","πd"],answer:2,feedback:"正确！圆的面积公式是S=πr²，其中r是半径。"},
+                    {id:5,difficulty:"entry",topic:"circumference",question:"圆的周长公式是什么？",options:["πr","2πr","πr²","πd²"],answer:1,feedback:"正确！圆的周长公式是C=2πr或C=πd。"},
+                    {id:6,difficulty:"entry",topic:"diameter",question:"圆的直径与半径的关系是？",options:["d=r","d=2r","d=3r","d=r²"],answer:1,feedback:"正确！直径是半径的2倍，即d=2r。"},
+                    {id:7,difficulty:"entry",topic:"cyclic_quadrilateral",question:"圆内接四边形的对角和是多少？",options:["90°","180°","270°","360°"],answer:1,feedback:"正确！圆内接四边形的对角互补，和为180°。"},
+                    {id:8,difficulty:"entry",topic:"perpendicular_radius",question:"垂径定理主要描述的是哪两者的关系？",options:["半径与直径","弦与直径","切线与半径","圆周角与圆心角"],answer:1,feedback:"正确！垂径定理描述的是垂直于弦的直径与弦的关系。"},
+                    // 基础级（30道）
+                    {id:9,difficulty:"basic",topic:"area",question:"半径为2cm的圆，面积是多少？（π取3.14）",options:["6.28cm²","12.56cm²","18.84cm²","25.12cm²"],answer:1,feedback:"正确！S=πr²=3.14×2²=12.56cm²。"},
+                    {id:10,difficulty:"basic",topic:"area",question:"直径为6cm的圆，面积是多少？（π取3.14）",options:["18.84cm²","28.26cm²","37.68cm²","113.04cm²"],answer:1,feedback:"正确！半径r=3cm，S=3.14×3²=28.26cm²。"},
+                    {id:11,difficulty:"basic",topic:"circumference",question:"半径为5cm的圆，周长是多少？（π取3.14）",options:["15.7cm","31.4cm","47.1cm","62.8cm"],answer:1,feedback:"正确！C=2πr=2×3.14×5=31.4cm。"},
+                    {id:12,difficulty:"basic",topic:"circumference",question:"直径为8cm的圆，周长是多少？（π取3.14）",options:["12.56cm","25.12cm","37.68cm","50.24cm"],answer:1,feedback:"正确！C=πd=3.14×8=25.12cm。"},
+                    {id:13,difficulty:"basic",topic:"diameter",question:"圆的周长是18.84cm，它的直径是多少？（π取3.14）",options:["3cm","6cm","9cm","12cm"],answer:1,feedback:"正确！d=C/π=18.84/3.14=6cm。"},
+                    {id:14,difficulty:"basic",topic:"diameter",question:"圆的面积是78.5cm²，它的半径是多少？（π取3.14）",options:["5cm","10cm","15cm","20cm"],answer:0,feedback:"正确！r=√(S/π)=√(78.5/3.14)=5cm。"},
+                    {id:15,difficulty:"basic",topic:"circumferential_angle",question:"同弧所对的圆周角是圆心角的多少倍？",options:["2倍","1倍","1/2倍","1/4倍"],answer:2,feedback:"正确！同弧所对的圆周角等于圆心角的一半。"},
+                    {id:16,difficulty:"basic",topic:"circumferential_angle",question:"圆心角为60°，同弧所对的圆周角是多少？",options:["30°","60°","90°","120°"],answer:0,feedback:"正确！圆周角=60°÷2=30°。"},
+                    {id:17,difficulty:"basic",topic:"circumferential_angle",question:"圆周角为45°，同弧所对的圆心角是多少？",options:["22.5°","45°","90°","180°"],answer:2,feedback:"正确！圆心角=45°×2=90°。"},
+                    {id:18,difficulty:"basic",topic:"tangent",question:"从圆外一点引圆的两条切线，它们的长度关系是？",options:["不相等","相等","一条是另一条的2倍","无法确定"],answer:1,feedback:"正确！从圆外一点引圆的两条切线，切线长相等。"},
+                    {id:19,difficulty:"basic",topic:"tangent",question:"从圆外一点P引圆的切线PA，A为切点，PA=5cm，则从P引另一条切线PB的长度是？",options:["2.5cm","5cm","10cm","无法确定"],answer:1,feedback:"正确！切线长相等，PB=PA=5cm。"},
+                    {id:20,difficulty:"basic",topic:"chord",question:"圆的半径为5cm，弦心距为3cm，则弦长为？",options:["4cm","6cm","8cm","10cm"],answer:2,feedback:"正确！弦长=2×√(5²-3²)=2×4=8cm。"},
+                    {id:21,difficulty:"basic",topic:"chord",question:"圆的直径为10cm，弦长为6cm，则弦心距为？",options:["3cm","4cm","5cm","6cm"],answer:1,feedback:"正确！弦心距=√(5²-3²)=4cm。"},
+                    {id:22,difficulty:"basic",topic:"cyclic_quadrilateral",question:"圆内接四边形中，一个角是70°，则它的对角是？",options:["20°","70°","110°","160°"],answer:2,feedback:"正确！对角互补，180°-70°=110°。"},
+                    {id:23,difficulty:"basic",topic:"cyclic_quadrilateral",question:"圆内接四边形ABCD中，∠A=80°，∠B=100°，则∠C=？",options:["80°","100°","120°","180°"],answer:0,feedback:"正确！∠C=180°-∠A=100°。"},
+                    {id:24,difficulty:"basic",topic:"perpendicular_radius",question:"垂直于弦的直径平分弦所对的？",options:["优弧","劣弧","两条弧","都不对"],answer:2,feedback:"正确！垂直于弦的直径平分弦且平分弦所对的两条弧。"},
+                    {id:25,difficulty:"basic",topic:"area",question:"半径扩大2倍，圆的面积扩大多少倍？",options:["2倍","4倍","6倍","8倍"],answer:1,feedback:"正确！面积与半径平方成正比，扩大2²=4倍。"},
+                    {id:26,difficulty:"basic",topic:"circumference",question:"半径扩大3倍，圆的周长扩大多少倍？",options:["3倍","6倍","9倍","12倍"],answer:0,feedback:"正确！周长与半径成正比，扩大3倍。"},
+                    {id:27,difficulty:"basic",topic:"circumferential_angle",question:"半圆所对的圆周角是多少？",options:["45°","90°","180°","360°"],answer:1,feedback:"正确！半圆所对的圆心角是180°，圆周角是90°。"},
+                    {id:28,difficulty:"basic",topic:"tangent",question:"圆的切线有几个公共点？",options:["0个","1个","2个","无数个"],answer:1,feedback:"正确！切线与圆只有一个公共点，即切点。"},
+                    {id:29,difficulty:"basic",topic:"chord",question:"圆中最长的弦是什么？",options:["半径","直径","切线","割线"],answer:1,feedback:"正确！直径是圆中最长的弦。"},
+                    {id:30,difficulty:"basic",topic:"diameter",question:"圆的半径增加1cm，直径增加多少？",options:["0.5cm","1cm","2cm","3cm"],answer:2,feedback:"正确！直径=2×半径，半径增加1cm，直径增加2cm。"},
+                    {id:31,difficulty:"basic",topic:"area",question:"一个圆的周长和面积数值相等，它的半径是多少？",options:["1","2","3","4"],answer:1,feedback:"正确！2πr=πr²，解得r=2。"},
+                    {id:32,difficulty:"basic",topic:"circumference",question:"一个圆的半径从3cm增加到5cm，周长增加了多少？（π取3.14）",options:["6.28cm","12.56cm","18.84cm","25.12cm"],answer:1,feedback:"正确！增加量=2π(5-3)=4π=12.56cm。"},
+                    {id:33,difficulty:"basic",topic:"area",question:"一个圆的半径从2cm增加到4cm，面积增加了多少？（π取3.14）",options:["12.56cm²","25.12cm²","37.68cm²","50.24cm²"],answer:2,feedback:"正确！增加量=π(4²-2²)=12π=37.68cm²。"},
+                    {id:34,difficulty:"basic",topic:"circumferential_angle",question:"同圆中，相等的圆周角所对的弧？",options:["相等","不相等","可能相等","无法确定"],answer:0,feedback:"正确！同圆或等圆中，相等的圆周角所对的弧相等。"},
+                    {id:35,difficulty:"basic",topic:"tangent",question:"经过半径外端并且垂直于这条半径的直线是圆的？",options:["割线","切线","弦","直径"],answer:1,feedback:"正确！这是切线的判定定理。"},
+                    {id:36,difficulty:"basic",topic:"chord",question:"在同圆中，相等的弦所对的圆心角？",options:["相等","不相等","互补","互余"],answer:0,feedback:"正确！同圆或等圆中，相等的弦所对的圆心角相等。"},
+                    {id:37,difficulty:"basic",topic:"cyclic_quadrilateral",question:"下列四边形中，一定内接于圆的是？",options:["平行四边形","矩形","菱形","梯形"],answer:1,feedback:"正确！矩形的四个角都是直角，对角互补，一定内接于圆。"},
+                    {id:38,difficulty:"basic",topic:"perpendicular_radius",question:"平分弦（不是直径）的直径与这条弦的位置关系是？",options:["平行","垂直","相交但不垂直","重合"],answer:1,feedback:"正确！平分弦（不是直径）的直径垂直于这条弦。"},
+                    // 进阶级（10道）
+                    {id:39,difficulty:"advanced",topic:"circumferential_angle",question:"如图，AB是圆O的直径，∠ACD=30°，则∠BAD=？",options:["30°","60°","90°","120°"],answer:1,feedback:"正确！∠ABD=∠ACD=30°，AB是直径，∠ADB=90°，所以∠BAD=60°。"},
+                    {id:40,difficulty:"advanced",topic:"tangent",question:"PA切圆O于A，PO交圆O于B，PA=6，PB=3，则圆O的半径是？",options:["3","4.5","6","9"],answer:1,feedback:"正确！设半径为r，由切线长定理：PA²=PB×(PB+2r)，36=3×(3+2r)，解得r=4.5。"},
+                    {id:41,difficulty:"advanced",topic:"chord",question:"圆O的半径为5，弦AB=8，弦CD=6，且AB∥CD，则AB与CD之间的距离是？",options:["1","7","1或7","无法确定"],answer:2,feedback:"正确！分两种情况：两弦在圆心同侧，距离为4-3=1；在异侧，距离为4+3=7。"},
+                    {id:42,difficulty:"advanced",topic:"cyclic_quadrilateral",question:"圆内接四边形ABCD中，∠A:∠B:∠C=2:3:4，则∠D=？",options:["60°","90°","120°","150°"],answer:1,feedback:"正确！设∠A=2x，∠B=3x，∠C=4x，则∠D=180°-2x，2x+3x+4x+180°-2x=360°，x=30°，∠D=90°。"},
+                    {id:43,difficulty:"advanced",topic:"area",question:"在边长为4cm的正方形内画一个最大的圆，这个圆的面积是多少？（π取3.14）",options:["6.28cm²","12.56cm²","25.12cm²","50.24cm²"],answer:1,feedback:"正确！圆的直径等于正方形边长4cm，半径2cm，面积=3.14×2²=12.56cm²。"},
+                    {id:44,difficulty:"advanced",topic:"circumferential_angle",question:"如图，A、B、C在圆O上，∠AOB=100°，则∠ACB=？",options:["50°","100°","130°","260°"],answer:2,feedback:"正确！优弧AB所对的圆心角是260°，所以∠ACB=130°。"},
+                    {id:45,difficulty:"advanced",topic:"tangent",question:"PA、PB分别切圆O于A、B，∠P=60°，PA=6，则AB=？",options:["3","6","6√3","12"],answer:1,feedback:"正确！PA=PB，∠P=60°，所以△PAB是等边三角形，AB=PA=6。"},
+                    {id:46,difficulty:"advanced",topic:"perpendicular_radius",question:"圆O中，弦AB垂直平分半径OC，OC=2，则弦AB=？",options:["√3","2√3","3","4"],answer:1,feedback:"正确！设OC与AB交于D，OD=1，OA=2，AD=√(4-1)=√3，AB=2√3。"},
+                    {id:47,difficulty:"advanced",topic:"area",question:"一个圆环，外圆半径5cm，内圆半径3cm，圆环的面积是多少？（π取3.14）",options:["12.56cm²","28.26cm²","50.24cm²","78.5cm²"],answer:2,feedback:"正确！圆环面积=π(R²-r²)=3.14×(25-9)=50.24cm²。"},
+                    {id:48,difficulty:"advanced",topic:"circumferential_angle",question:"如图，AB是圆O的弦，∠AOB=80°，则弦AB所对的圆周角是？",options:["40°","140°","40°或140°","80°"],answer:2,feedback:"正确！弦AB所对的弧有两条，圆周角分别是40°和140°。"},
+                    // 拔高级（5道）
+                    {id:49,difficulty:"challenge",topic:"tangent",question:"如图，AB是圆O的直径，C是圆O上一点，过C作圆O的切线交AB的延长线于E，AD⊥CE于D，若AD=6，DE=8，则圆O的半径是？",options:["15/4","25/4","10","15"],answer:1,feedback:"正确！连接OC，OC∥AD，△EOC∽△EAD，设半径为r，EC=10，r/6=10/(10+AE)，AE=√(6²+8²)=10，解得r=25/4。"},
+                    {id:50,difficulty:"challenge",topic:"area",question:"如图，正方形ABCD的边长为2，分别以A、B、C、D为圆心，1为半径作圆，则阴影部分的面积是？",options:["4-π","4-2π","8-π","8-2π"],answer:0,feedback:"正确！四个扇形合起来是一个整圆，阴影面积=正方形面积-圆面积=4-π。"},
+                    {id:51,difficulty:"challenge",topic:"cyclic_quadrilateral",question:"圆内接四边形ABCD中，AB=BC=CD，∠ABC=120°，则∠BAD=？",options:["60°","75°","90°","105°"],answer:0,feedback:"正确！AB=BC=CD，弧AB=弧BC=弧CD，∠ABC=120°，所以弧ADC=240°，弧AB=弧BC=弧CD=40°，∠BAD=1/2×(弧BC+弧CD)=60°。"},
+                    {id:52,difficulty:"challenge",topic:"tangent",question:"如图，PA切圆O于A，PBC是圆O的割线，若PA=6，PB=3，则BC=？",options:["3","6","9","12"],answer:2,feedback:"正确！由切割线定理：PA²=PB×PC，36=3×PC，PC=12，BC=PC-PB=9。"},
+                    {id:53,difficulty:"challenge",topic:"circumferential_angle",question:"如图，圆O的半径为1，AB是圆O的一条弦，且AB=√3，则弦AB所对的圆周角的度数是？",options:["60°","120°","60°或120°","30°或150°"],answer:2,feedback:"正确！过O作OC⊥AB于C，AC=√3/2，OA=1，所以∠AOC=60°，∠AOB=120°，弦AB所对的圆周角是60°或120°。"}
+                ]
             },
-            {
-                id: 2,
-                topic: "tangent_theorem",
-                question: "What is the angle between a tangent and a radius at the point of contact?",
-                options: [
-                    "45°",
-                    "90°",
-                    "120°",
-                    "180°"
-                ],
-                answer: 1,
-                feedback: "Correct! The tangent to a circle is perpendicular to the radius at the point of contact (90°)."
-            },
-            {
-                id: 3,
-                topic: "circumferential_angle",
-                question: "Angles subtended by the same arc at the circumference are?",
-                options: [
-                    "Equal",
-                    "Double",
-                    "Half",
-                    "Supplementary"
-                ],
-                answer: 0,
-                feedback: "Correct! Angles subtended by the same arc at the circumference of a circle are equal."
-            },
-            {
-                id: 4,
-                topic: "chord_theorem",
-                question: "The perpendicular from the centre of a circle to a chord?",
-                options: [
-                    "Bisects the chord",
-                    "Is parallel to the chord",
-                    "Is equal to the chord",
-                    "Is twice the length of the chord"
-                ],
-                answer: 0,
-                feedback: "Correct! The perpendicular from the centre of a circle to a chord bisects the chord."
-            },
-            {
-                id: 5,
-                topic: "tangent_theorem",
-                question: "Two tangents drawn from the same external point to a circle are?",
-                options: [
-                    "Unequal in length",
-                    "Equal in length",
-                    "Perpendicular to each other",
-                    "Parallel to each other"
-                ],
-                answer: 1,
-                feedback: "Correct! Two tangents from the same external point to a circle are equal in length."
-            },
-            {
-                id: 6,
-                topic: "circumferential_angle",
-                question: "The angle at the centre of a circle is how many times the angle at the circumference subtended by the same arc?",
-                options: [
-                    "1 time",
-                    "2 times",
-                    "3 times",
-                    "4 times"
-                ],
-                answer: 1,
-                feedback: "Correct! The angle at the centre is twice the angle at the circumference for the same arc."
-            },
-            {
-                id: 7,
-                topic: "chord_theorem",
-                question: "If two chords in a circle are equal in length, they are?",
-                options: [
-                    "Equidistant from the centre",
-                    "Parallel to each other",
-                    "Perpendicular to each other",
-                    "At different distances from the centre"
-                ],
-                answer: 0,
-                feedback: "Correct! Equal chords in a circle are equidistant from the centre."
-            },
-            {
-                id: 8,
-                topic: "circumferential_angle",
-                question: "Angles in the same segment of a circle are?",
-                options: [
-                    "Supplementary",
-                    "Complementary",
-                    "Equal",
-                    "Unequal"
-                ],
-                answer: 2,
-                feedback: "Correct! Angles in the same segment of a circle are equal."
-            },
-            {
-                id: 9,
-                topic: "tangent_theorem",
-                question: "What is the name of the line that touches a circle at only one point?",
-                options: [
-                    "Chord",
-                    "Radius",
-                    "Tangent",
-                    "Diameter"
-                ],
-                answer: 2,
-                feedback: "Correct! A tangent is a straight line that touches a circle at only one point."
-            },
-            {
-                id: 10,
-                topic: "chord_theorem",
-                question: "The longest chord in a circle is the?",
-                options: [
-                    "Radius",
-                    "Diameter",
-                    "Tangent",
-                    "Secant"
-                ],
-                answer: 1,
-                feedback: "Correct! The diameter is the longest chord in a circle (it passes through the centre)."
+            en: {
+                home: "Home",
+                breadcrumb: "Circle Geometry Quiz",
+                wrongBookBtn: "Wrong Answer Book",
+                progressBtn: "My Progress",
+                fontLabel: "Font Size:",
+                fontSmall: "Small",
+                fontMedium: "Medium",
+                fontLarge: "Large",
+                langLabel: "Language:",
+                quizTitle: "Circle Geometry Quiz (GCSE Level)",
+                randomMode: "Random Questions",
+                topicMode: "By Topic",
+                topicAll: "All Topics",
+                topicArea: "Area of a Circle",
+                topicCircumference: "Circumference",
+                topicDiameter: "Diameter & Radius",
+                topicTangent: "Tangent Theorem",
+                topicChord: "Chord Theorem",
+                topicAngle: "Circumferential Angle",
+                topicQuad: "Cyclic Quadrilateral",
+                topicPerp: "Perpendicular Radius",
+                diffAll: "All Difficulties",
+                diffEntry: "Entry",
+                diffBasic: "Basic",
+                diffAdvanced: "Advanced",
+                diffChallenge: "Challenge",
+                submitBtn: "Submit Answer",
+                nextBtn: "Next Question",
+                footer: "EBU5315 Interactive Media Design | GCSE Circle Geometry Learning",
+                selectOptionTip: "Please select an option!",
+                quizCompleted: "Quiz completed! Switch difficulty or topic to continue practicing",
+                questionCounter: (current, total) => `Question ${current} / ${total} Questions`,
+                levelNovice: "Circle Novice",
+                levelBeginner: "Circle Beginner",
+                levelAdvanced: "Circle Advanced",
+                levelMaster: "Circle Master",
+                progressTitle: "My Progress",
+                levelLabel: "Current Level:",
+                scoreLabel: "Current Score:",
+                accuracyLabel: "Overall Accuracy:",
+                closeBtn: "Close",
+                upgradeTitle: "Congratulations! Upgraded to",
+                upgradeSubtitle: "Unlock more exciting questions!",
+                // 错题本国际化
+                wrongBookTitle: "Wrong Answer Book",
+                clearAllBtn: "Clear All Wrong Answers",
+                emptyTip: "No wrong answers yet, keep practicing!",
+                wrongNumPrefix: "Wrong Answer",
+                difficultyEntry: "Entry",
+                difficultyBasic: "Basic",
+                difficultyAdvanced: "Advanced",
+                difficultyChallenge: "Challenge",
+                yourAnswer: "Your Answer:",
+                correctAnswer: "Correct Answer:",
+                feedback: "Explanation:",
+                deleteConfirm: "Are you sure to delete this wrong answer?",
+                clearConfirm: "Are you sure to clear all wrong answers? This action cannot be undone!",
+                questions: [
+                    // 入门级（8道）
+                    {id:1,difficulty:"entry",topic:"circumferential_angle",question:"What is the size of the angle subtended by a diameter on the circumference?",options:["30°","60°","90°","180°"],answer:2,feedback:"Correct! The angle subtended by a diameter is a right angle (90°)."},
+                    {id:2,difficulty:"entry",topic:"tangent",question:"What is the angle between a tangent to a circle and the radius at the point of contact?",options:["30°","60°","90°","180°"],answer:2,feedback:"Correct! A tangent to a circle is perpendicular to the radius at the point of contact (90°)."},
+                    {id:3,difficulty:"entry",topic:"chord",question:"How does a diameter perpendicular to a chord divide the chord?",options:["Bisects the chord","Trisects the chord","Quadrisects the chord","Does not divide"],answer:0,feedback:"Correct! A diameter perpendicular to a chord bisects the chord and the two arcs subtended by the chord."},
+                    {id:4,difficulty:"entry",topic:"area",question:"What is the formula for the area of a circle?",options:["πr","2πr","πr²","πd"],answer:2,feedback:"Correct! The area of a circle is S=πr², where r is the radius."},
+                    {id:5,difficulty:"entry",topic:"circumference",question:"What is the formula for the circumference of a circle?",options:["πr","2πr","πr²","πd²"],answer:1,feedback:"Correct! The circumference of a circle is C=2πr or C=πd."},
+                    {id:6,difficulty:"entry",topic:"diameter",question:"What is the relationship between the diameter and radius of a circle?",options:["d=r","d=2r","d=3r","d=r²"],answer:1,feedback:"Correct! The diameter is twice the radius, d=2r."},
+                    {id:7,difficulty:"entry",topic:"cyclic_quadrilateral",question:"What is the sum of opposite angles in a cyclic quadrilateral?",options:["90°","180°","270°","360°"],answer:1,feedback:"Correct! Opposite angles in a cyclic quadrilateral are supplementary, summing to 180°."},
+                    {id:8,difficulty:"entry",topic:"perpendicular_radius",question:"What relationship does the perpendicular radius theorem describe?",options:["Radius and diameter","Chord and diameter","Tangent and radius","Circumferential and central angle"],answer:1,feedback:"Correct! The perpendicular radius theorem describes the relationship between a diameter perpendicular to a chord and the chord."},
+                    // 基础级（30道）
+                    {id:9,difficulty:"basic",topic:"area",question:"What is the area of a circle with radius 2cm? (π=3.14)",options:["6.28cm²","12.56cm²","18.84cm²","25.12cm²"],answer:1,feedback:"Correct! S=πr²=3.14×2²=12.56cm²."},
+                    {id:10,difficulty:"basic",topic:"area",question:"What is the area of a circle with diameter 6cm? (π=3.14)",options:["18.84cm²","28.26cm²","37.68cm²","113.04cm²"],answer:1,feedback:"Correct! Radius r=3cm, S=3.14×3²=28.26cm²."},
+                    {id:11,difficulty:"basic",topic:"circumference",question:"What is the circumference of a circle with radius 5cm? (π=3.14)",options:["15.7cm","31.4cm","47.1cm","62.8cm"],answer:1,feedback:"Correct! C=2πr=2×3.14×5=31.4cm."},
+                    {id:12,difficulty:"basic",topic:"circumference",question:"What is the circumference of a circle with diameter 8cm? (π=3.14)",options:["12.56cm","25.12cm","37.68cm","50.24cm"],answer:1,feedback:"Correct! C=πd=3.14×8=25.12cm."},
+                    {id:13,difficulty:"basic",topic:"diameter",question:"The circumference of a circle is 18.84cm. What is its diameter? (π=3.14)",options:["3cm","6cm","9cm","12cm"],answer:1,feedback:"Correct! d=C/π=18.84/3.14=6cm."},
+                    {id:14,difficulty:"basic",topic:"diameter",question:"The area of a circle is 78.5cm². What is its radius? (π=3.14)",options:["5cm","10cm","15cm","20cm"],answer:0,feedback:"Correct! r=√(S/π)=√(78.5/3.14)=5cm."},
+                    {id:15,difficulty:"basic",topic:"circumferential_angle",question:"The circumferential angle subtended by the same arc is how many times the central angle?",options:["2 times","1 time","1/2 time","1/4 time"],answer:2,feedback:"Correct! The circumferential angle is half the central angle subtended by the same arc."},
+                    {id:16,difficulty:"basic",topic:"circumferential_angle",question:"If the central angle is 60°, what is the circumferential angle subtended by the same arc?",options:["30°","60°","90°","120°"],answer:0,feedback:"Correct! Circumferential angle = 60° ÷ 2 = 30°."},
+                    {id:17,difficulty:"basic",topic:"circumferential_angle",question:"If the circumferential angle is 45°, what is the central angle subtended by the same arc?",options:["22.5°","45°","90°","180°"],answer:2,feedback:"Correct! Central angle = 45° × 2 = 90°."},
+                    {id:18,difficulty:"basic",topic:"tangent",question:"What is the relationship between the lengths of two tangents drawn from an external point to a circle?",options:["Unequal","Equal","One is twice the other","Cannot be determined"],answer:1,feedback:"Correct! Tangents drawn from an external point to a circle are equal in length."},
+                    {id:19,difficulty:"basic",topic:"tangent",question:"From point P outside a circle, tangent PA is drawn with A as the point of contact. If PA=5cm, what is the length of another tangent PB from P?",options:["2.5cm","5cm","10cm","Cannot be determined"],answer:1,feedback:"Correct! Tangents are equal, so PB=PA=5cm."},
+                    {id:20,difficulty:"basic",topic:"chord",question:"A circle has radius 5cm and the distance from the center to a chord is 3cm. What is the length of the chord?",options:["4cm","6cm","8cm","10cm"],answer:2,feedback:"Correct! Chord length = 2×√(5²-3²) = 2×4 = 8cm."},
+                    {id:21,difficulty:"basic",topic:"chord",question:"A circle has diameter 10cm and a chord of length 6cm. What is the distance from the center to the chord?",options:["3cm","4cm","5cm","6cm"],answer:1,feedback:"Correct! Distance = √(5²-3²) = 4cm."},
+                    {id:22,difficulty:"basic",topic:"cyclic_quadrilateral",question:"In a cyclic quadrilateral, one angle is 70°. What is its opposite angle?",options:["20°","70°","110°","160°"],answer:2,feedback:"Correct! Opposite angles are supplementary, so 180°-70°=110°."},
+                    {id:23,difficulty:"basic",topic:"cyclic_quadrilateral",question:"In cyclic quadrilateral ABCD, ∠A=80° and ∠B=100°. What is ∠C?",options:["80°","100°","120°","180°"],answer:0,feedback:"Correct! ∠C=180°-∠A=100°."},
+                    {id:24,difficulty:"basic",topic:"perpendicular_radius",question:"A diameter perpendicular to a chord bisects?",options:["The major arc","The minor arc","Both arcs","Neither"],answer:2,feedback:"Correct! A diameter perpendicular to a chord bisects the chord and both arcs subtended by the chord."},
+                    {id:25,difficulty:"basic",topic:"area",question:"If the radius of a circle is doubled, by how many times does its area increase?",options:["2 times","4 times","6 times","8 times"],answer:1,feedback:"Correct! Area is proportional to the square of the radius, so it increases by 2²=4 times."},
+                    {id:26,difficulty:"basic",topic:"circumference",question:"If the radius of a circle is tripled, by how many times does its circumference increase?",options:["3 times","6 times","9 times","12 times"],answer:0,feedback:"Correct! Circumference is proportional to the radius, so it increases by 3 times."},
+                    {id:27,difficulty:"basic",topic:"circumferential_angle",question:"What is the circumferential angle subtended by a semicircle?",options:["45°","90°","180°","360°"],answer:1,feedback:"Correct! The central angle subtended by a semicircle is 180°, so the circumferential angle is 90°."},
+                    {id:28,difficulty:"basic",topic:"tangent",question:"How many common points does a tangent have with a circle?",options:["0","1","2","Infinite"],answer:1,feedback:"Correct! A tangent has exactly one common point with a circle, called the point of contact."},
+                    {id:29,difficulty:"basic",topic:"chord",question:"What is the longest chord in a circle?",options:["Radius","Diameter","Tangent","Secant"],answer:1,feedback:"Correct! The diameter is the longest chord in a circle."},
+                    {id:30,difficulty:"basic",topic:"diameter",question:"If the radius of a circle increases by 1cm, by how much does the diameter increase?",options:["0.5cm","1cm","2cm","3cm"],answer:2,feedback:"Correct! Diameter=2×radius, so if radius increases by 1cm, diameter increases by 2cm."},
+                    {id:31,difficulty:"basic",topic:"area",question:"A circle has equal numerical values for its circumference and area. What is its radius?",options:["1","2","3","4"],answer:1,feedback:"Correct! 2πr=πr², solving gives r=2."},
+                    {id:32,difficulty:"basic",topic:"circumference",question:"The radius of a circle increases from 3cm to 5cm. By how much does the circumference increase? (π=3.14)",options:["6.28cm","12.56cm","18.84cm","25.12cm"],answer:1,feedback:"Correct! Increase = 2π(5-3) = 4π = 12.56cm."},
+                    {id:33,difficulty:"basic",topic:"area",question:"The radius of a circle increases from 2cm to 4cm. By how much does the area increase? (π=3.14)",options:["12.56cm²","25.12cm²","37.68cm²","50.24cm²"],answer:2,feedback:"Correct! Increase = π(4²-2²) = 12π = 37.68cm²."},
+                    {id:34,difficulty:"basic",topic:"circumferential_angle",question:"In the same circle, equal circumferential angles subtend?",options:["Equal arcs","Unequal arcs","May be equal","Cannot be determined"],answer:0,feedback:"Correct! In the same or equal circles, equal circumferential angles subtend equal arcs."},
+                    {id:35,difficulty:"basic",topic:"tangent",question:"A line passing through the end of a radius and perpendicular to it is a?",options:["Secant","Tangent","Chord","Diameter"],answer:1,feedback:"Correct! This is the tangent line theorem."},
+                    {id:36,difficulty:"basic",topic:"chord",question:"In the same circle, equal chords subtend?",options:["Equal central angles","Unequal central angles","Supplementary angles","Complementary angles"],answer:0,feedback:"Correct! In the same or equal circles, equal chords subtend equal central angles."},
+                    {id:37,difficulty:"basic",topic:"cyclic_quadrilateral",question:"Which of the following quadrilaterals is always cyclic?",options:["Parallelogram","Rectangle","Rhombus","Trapezoid"],answer:1,feedback:"Correct! A rectangle has four right angles, so opposite angles are supplementary and it is always cyclic."},
+                    {id:38,difficulty:"basic",topic:"perpendicular_radius",question:"What is the relationship between a diameter that bisects a chord (not a diameter) and the chord?",options:["Parallel","Perpendicular","Intersecting but not perpendicular","Coincident"],answer:1,feedback:"Correct! A diameter that bisects a chord (not a diameter) is perpendicular to the chord."},
+                    // 进阶级（10道）
+                    {id:39,difficulty:"advanced",topic:"circumferential_angle",question:"AB is the diameter of circle O. If ∠ACD=30°, what is ∠BAD?",options:["30°","60°","90°","120°"],answer:1,feedback:"Correct! ∠ABD=∠ACD=30°, AB is diameter so ∠ADB=90°, therefore ∠BAD=60°."},
+                    {id:40,difficulty:"advanced",topic:"tangent",question:"PA is tangent to circle O at A. PO intersects the circle at B. If PA=6 and PB=3, what is the radius of circle O?",options:["3","4.5","6","9"],answer:1,feedback:"Correct! Let radius be r. By tangent-secant theorem: PA²=PB×(PB+2r), 36=3×(3+2r), solving gives r=4.5."},
+                    {id:41,difficulty:"advanced",topic:"chord",question:"Circle O has radius 5. Chord AB=8 and chord CD=6, with AB∥CD. What is the distance between AB and CD?",options:["1","7","1 or 7","Cannot be determined"],answer:2,feedback:"Correct! Two cases: same side of center (distance=4-3=1) or opposite sides (distance=4+3=7)."},
+                    {id:42,difficulty:"advanced",topic:"cyclic_quadrilateral",question:"In cyclic quadrilateral ABCD, ∠A:∠B:∠C=2:3:4. What is ∠D?",options:["60°","90°","120°","150°"],answer:1,feedback:"Correct! Let ∠A=2x, ∠B=3x, ∠C=4x, then ∠D=180°-2x. 2x+3x+4x+180°-2x=360°, x=30°, so ∠D=90°."},
+                    {id:43,difficulty:"advanced",topic:"area",question:"What is the area of the largest circle that can be drawn inside a square of side 4cm? (π=3.14)",options:["6.28cm²","12.56cm²","25.12cm²","50.24cm²"],answer:1,feedback:"Correct! Diameter=4cm, radius=2cm, area=3.14×2²=12.56cm²."},
+                    {id:44,difficulty:"advanced",topic:"circumferential_angle",question:"Points A, B, C are on circle O. If ∠AOB=100°, what is ∠ACB?",options:["50°","100°","130°","260°"],answer:2,feedback:"Correct! The central angle for major arc AB is 260°, so ∠ACB=130°."},
+                    {id:45,difficulty:"advanced",topic:"tangent",question:"PA and PB are tangents to circle O at A and B. If ∠P=60° and PA=6, what is AB?",options:["3","6","6√3","12"],answer:1,feedback:"Correct! PA=PB and ∠P=60°, so △PAB is equilateral, AB=PA=6."},
+                    {id:46,difficulty:"advanced",topic:"perpendicular_radius",question:"In circle O, chord AB perpendicularly bisects radius OC. If OC=2, what is the length of AB?",options:["√3","2√3","3","4"],answer:1,feedback:"Correct! Let OC intersect AB at D. OD=1, OA=2, AD=√(4-1)=√3, so AB=2√3."},
+                    {id:47,difficulty:"advanced",topic:"area",question:"An annulus has outer radius 5cm and inner radius 3cm. What is its area? (π=3.14)",options:["12.56cm²","28.26cm²","50.24cm²","78.5cm²"],answer:2,feedback:"Correct! Area=π(R²-r²)=3.14×(25-9)=50.24cm²."},
+                    {id:48,difficulty:"advanced",topic:"circumferential_angle",question:"AB is a chord of circle O. If ∠AOB=80°, what are the circumferential angles subtended by chord AB?",options:["40°","140°","40° or 140°","80°"],answer:2,feedback:"Correct! Chord AB subtends two arcs, so the circumferential angles are 40° and 140°."},
+                    // 拔高级（5道）
+                    {id:49,difficulty:"challenge",topic:"tangent",question:"AB is the diameter of circle O. C is a point on the circle. The tangent at C meets AB extended at E. AD⊥CE at D. If AD=6 and DE=8, what is the radius of circle O?",options:["15/4","25/4","10","15"],answer:1,feedback:"Correct! Connect OC. OC∥AD, so △EOC∽△EAD. Let radius be r. EC=10, r/6=10/(10+AE), AE=√(6²+8²)=10, solving gives r=25/4."},
+                    {id:50,difficulty:"challenge",topic:"area",question:"Square ABCD has side length 2. Circles of radius 1 are drawn with centers at A, B, C, D. What is the area of the shaded region?",options:["4-π","4-2π","8-π","8-2π"],answer:0,feedback:"Correct! The four sectors form a complete circle. Shaded area = square area - circle area = 4-π."},
+                    {id:51,difficulty:"challenge",topic:"cyclic_quadrilateral",question:"In cyclic quadrilateral ABCD, AB=BC=CD and ∠ABC=120°. What is ∠BAD?",options:["60°","75°","90°","105°"],answer:0,feedback:"Correct! AB=BC=CD, so arcs AB=BC=CD. ∠ABC=120°, so arc ADC=240°, arcs AB=BC=CD=40°, ∠BAD=1/2×(arc BC+arc CD)=60°."},
+                    {id:52,difficulty:"challenge",topic:"tangent",question:"PA is tangent to circle O at A. PBC is a secant. If PA=6 and PB=3, what is BC?",options:["3","6","9","12"],answer:2,feedback:"Correct! By tangent-secant theorem: PA²=PB×PC, 36=3×PC, PC=12, so BC=PC-PB=9."},
+                    {id:53,difficulty:"challenge",topic:"circumferential_angle",question:"Circle O has radius 1. Chord AB has length √3. What are the circumferential angles subtended by chord AB?",options:["60°","120°","60° or 120°","30° or 150°"],answer:2,feedback:"Correct! Draw OC⊥AB at C. AC=√3/2, OA=1, so ∠AOC=60°, ∠AOB=120°, so the circumferential angles are 60° or 120°."}
+                ]
             }
+        };
+
+        // 全局状态
+        let selectedOptionIndex = -1;
+        let currentQuestionIndex = 0;
+        let currentQuestions = [];
+        let isRandomMode = true;
+        let currentLang = 'zh';
+        let wrongQuestions = [];
+
+        // 积分与等级系统
+        const levels = [
+            {name: "levelNovice", score: 0},
+            {name: "levelBeginner", score: 30},
+            {name: "levelAdvanced", score: 200},
+            {name: "levelMaster", score: 350}
         ];
+        let userScore = 0;
+        let userLevel = 0;
+        let totalAnswers = 0;
+        let correctAnswers = 0;
 
-        // 2. 全局变量
-        let currentQuestions = []; // 当前刷题的题目列表
-        let currentQuestionIndex = 0; // 当前题目索引
-        let selectedOptionIndex = -1; // 选中的选项索引
+        // DOM元素缓存
+        const elements = {};
 
-        // 3. 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化字体大小调节
+        // 页面初始化
+        window.onload = function() {
+            cacheElements();
+            loadUserData();
             initFontControl();
-            // 初始化刷题模式
-            initQuizMode();
-            // 初始化随机刷题（默认模式）
-            loadRandomQuestions();
-            // 加载当前题目
-            loadCurrentQuestion();
-            // 绑定提交答案事件
-            bindSubmitEvent();
-            // 绑定下一题事件
-            bindNextQuestionEvent();
-            // 绑定刷新提示（容错性）
-            bindBeforeUnloadEvent();
-        });
+            initLangControl();
+            initModeControls();
+            initQuestionControls();
+            initProgressModal();
+            initUpgradeOverlay();
+            initWrongBookModal();
+            filterQuestions();
+            renderCurrentQuestion();
+        };
 
-        // 4. 初始化字体大小调节（包容性设计）
+        // 缓存DOM元素
+        function cacheElements() {
+            elements.fontSelect = document.getElementById('font-select');
+            elements.langSelect = document.getElementById('lang-select');
+            elements.randomMode = document.getElementById('random-mode');
+            elements.topicMode = document.getElementById('topic-mode');
+            elements.topicSelect = document.getElementById('topic-select');
+            elements.difficultySelect = document.getElementById('difficulty-select');
+            elements.questionCounter = document.getElementById('question-counter');
+            elements.questionContent = document.getElementById('question-content');
+            elements.optionsContainer = document.getElementById('options-container');
+            elements.submitAnswer = document.getElementById('submit-answer');
+            elements.feedbackArea = document.getElementById('feedback-area');
+            elements.nextQuestion = document.getElementById('next-question');
+            elements.wrongBookBtn = document.getElementById('wrong-book-btn');
+            elements.progressBtn = document.getElementById('progress-btn');
+            elements.progressModal = document.getElementById('progress-modal');
+            elements.closeProgress = document.getElementById('close-progress');
+            elements.upgradeOverlay = document.getElementById('upgrade-overlay');
+            elements.upgradeTitle = document.getElementById('upgrade-title');
+            elements.upgradeSubtitle = document.getElementById('upgrade-subtitle');
+            elements.upgradeSound = document.getElementById('upgradeSound');
+            // 错题本DOM元素
+            elements.wrongBookModal = document.getElementById('wrong-book-modal');
+            elements.closeWrongBook = document.getElementById('close-wrong-book');
+            elements.clearAllWrong = document.getElementById('clear-all-wrong');
+            elements.wrongList = document.getElementById('wrong-list');
+            elements.emptyWrongTip = document.getElementById('empty-wrong-tip');
+        }
+
+        // 加载用户本地数据
+        function loadUserData() {
+            const savedScore = localStorage.getItem('userScore');
+            const savedLevel = localStorage.getItem('userLevel');
+            const savedTotal = localStorage.getItem('totalAnswers');
+            const savedCorrect = localStorage.getItem('correctAnswers');
+            if(savedScore) userScore = parseInt(savedScore);
+            if(savedLevel) userLevel = parseInt(savedLevel);
+            if(savedTotal) totalAnswers = parseInt(savedTotal);
+            if(savedCorrect) correctAnswers = parseInt(savedCorrect);
+            // 加载错题数据
+            wrongQuestions = JSON.parse(localStorage.getItem('quizWrongQuestions') || '[]');
+        }
+
+        // 保存用户本地数据
+        function saveUserData() {
+            localStorage.setItem('userScore', userScore);
+            localStorage.setItem('userLevel', userLevel);
+            localStorage.setItem('totalAnswers', totalAnswers);
+            localStorage.setItem('correctAnswers', correctAnswers);
+        }
+
+        // 字体大小控制
         function initFontControl() {
-            const fontSm = document.getElementById('font-sm');
-            const fontMd = document.getElementById('font-md');
-            const fontLg = document.getElementById('font-lg');
-            const body = document.body;
-
-            // 小字体
-            fontSm.addEventListener('click', function() {
-                body.style.fontSize = 'var(--font-size-sm)';
-                // 切换激活状态
-                [fontSm, fontMd, fontLg].forEach(btn => btn.classList.remove('active'));
-                fontSm.classList.add('active');
+            elements.fontSelect.addEventListener('change', function() {
+                const fontSize = this.value;
+                document.body.style.fontSize = `var(--font-size-${fontSize})`;
+                localStorage.setItem('quizFontSize', fontSize);
             });
-
-            // 中字体（默认）
-            fontMd.addEventListener('click', function() {
-                body.style.fontSize = 'var(--font-size-md)';
-                [fontSm, fontMd, fontLg].forEach(btn => btn.classList.remove('active'));
-                fontMd.classList.add('active');
-            });
-
-            // 大字体
-            fontLg.addEventListener('click', function() {
-                body.style.fontSize = 'var(--font-size-lg)';
-                [fontSm, fontMd, fontLg].forEach(btn => btn.classList.remove('active'));
-                fontLg.classList.add('active');
-            });
-        }
-
-        // 5. 初始化刷题模式
-        function initQuizMode() {
-            const randomMode = document.getElementById('random-mode');
-            const topicMode = document.getElementById('topic-mode');
-            const topicSelect = document.getElementById('topic-select');
-
-            // 随机刷题模式
-            randomMode.addEventListener('click', function() {
-                [randomMode, topicMode].forEach(btn => btn.classList.remove('active'));
-                randomMode.classList.add('active');
-                topicSelect.classList.add('hidden');
-                loadRandomQuestions();
-                currentQuestionIndex = 0;
-                loadCurrentQuestion();
-            });
-
-            // 按考点刷题模式
-            topicMode.addEventListener('click', function() {
-                [randomMode, topicMode].forEach(btn => btn.classList.remove('active'));
-                topicMode.classList.add('active');
-                topicSelect.classList.remove('hidden');
-                // 加载对应考点题目
-                loadTopicQuestions(topicSelect.value);
-                currentQuestionIndex = 0;
-                loadCurrentQuestion();
-            });
-
-            // 考点选择变化
-            topicSelect.addEventListener('change', function() {
-                loadTopicQuestions(this.value);
-                currentQuestionIndex = 0;
-                loadCurrentQuestion();
-            });
-        }
-
-        // 6. 加载随机题目
-        function loadRandomQuestions() {
-            // 浅拷贝题库，避免修改原数组
-            currentQuestions = [...quizQuestions];
-            // 随机打乱
-            currentQuestions.sort(() => Math.random() - 0.5);
-            // 更新总题数
-            document.getElementById('total-questions').textContent = currentQuestions.length;
-        }
-
-        // 7. 加载指定考点题目
-        function loadTopicQuestions(topic) {
-            if (topic === 'all') {
-                currentQuestions = [...quizQuestions];
-            } else {
-                currentQuestions = quizQuestions.filter(q => q.topic === topic);
+            const f = localStorage.getItem('quizFontSize');
+            if(f) {
+                elements.fontSelect.value = f;
+                document.body.style.fontSize = `var(--font-size-${f})`;
             }
-            // 更新总题数
-            document.getElementById('total-questions').textContent = currentQuestions.length;
         }
 
-        // 8. 加载当前题目
-        function loadCurrentQuestion() {
-            if (currentQuestions.length === 0) {
-                document.getElementById('question-content').textContent = 'No questions available for this topic!';
-                document.getElementById('options-container').innerHTML = '';
-                document.getElementById('submit-answer').disabled = true;
+        // 语言切换控制
+        function initLangControl() {
+            elements.langSelect.addEventListener('change', function() {
+                updateAllLang(this.value);
+            });
+            const l = localStorage.getItem('quizLang');
+            if(l) {
+                elements.langSelect.value = l;
+                updateAllLang(l);
+            }
+        }
+
+        // 全页面语言更新
+        function updateAllLang(lang) {
+            currentLang = lang;
+            document.querySelector('.breadcrumb a').textContent = i18n[lang].home;
+            document.getElementById('breadcrumb-text').textContent = i18n[lang].breadcrumb;
+            elements.wrongBookBtn.textContent = i18n[lang].wrongBookBtn;
+            elements.progressBtn.textContent = i18n[lang].progressBtn;
+            document.getElementById('font-label').textContent = i18n[lang].fontLabel;
+            document.getElementById('lang-label').textContent = i18n[lang].langLabel;
+            document.getElementById('quiz-title').textContent = i18n[lang].quizTitle;
+            elements.randomMode.textContent = i18n[lang].randomMode;
+            elements.topicMode.textContent = i18n[lang].topicMode;
+            document.getElementById('topic-all').textContent = i18n[lang].topicAll;
+            document.getElementById('topic-area').textContent = i18n[lang].topicArea;
+            document.getElementById('topic-circumference').textContent = i18n[lang].topicCircumference;
+            document.getElementById('topic-diameter').textContent = i18n[lang].topicDiameter;
+            document.getElementById('topic-tangent').textContent = i18n[lang].topicTangent;
+            document.getElementById('topic-chord').textContent = i18n[lang].topicChord;
+            document.getElementById('topic-angle').textContent = i18n[lang].topicAngle;
+            document.getElementById('topic-quad').textContent = i18n[lang].topicQuad;
+            document.getElementById('topic-perp').textContent = i18n[lang].topicPerp;
+            document.getElementById('diff-all').textContent = i18n[lang].diffAll;
+            document.getElementById('diff-entry').textContent = i18n[lang].diffEntry;
+            document.getElementById('diff-basic').textContent = i18n[lang].diffBasic;
+            document.getElementById('diff-advanced').textContent = i18n[lang].diffAdvanced;
+            document.getElementById('diff-challenge').textContent = i18n[lang].diffChallenge;
+            elements.submitAnswer.textContent = i18n[lang].submitBtn;
+            elements.nextQuestion.textContent = i18n[lang].nextBtn;
+            document.getElementById('footer-text').textContent = i18n[lang].footer;
+
+            // 字体选项更新
+            const fontOpts = document.querySelectorAll('#font-select option');
+            fontOpts[0].textContent = i18n[lang].fontSmall;
+            fontOpts[1].textContent = i18n[lang].fontMedium;
+            fontOpts[2].textContent = i18n[lang].fontLarge;
+
+            // 进度弹窗更新
+            document.getElementById('progress-title').textContent = i18n[lang].progressTitle;
+            document.getElementById('level-label').textContent = i18n[lang].levelLabel;
+            document.getElementById('score-label').textContent = i18n[lang].scoreLabel;
+            document.getElementById('accuracy-label').textContent = i18n[lang].accuracyLabel;
+            elements.closeProgress.textContent = i18n[lang].closeBtn;
+
+            // 错题本弹窗更新
+            document.getElementById('wrong-book-title').textContent = i18n[lang].wrongBookTitle;
+            elements.clearAllWrong.textContent = i18n[lang].clearAllBtn;
+            elements.emptyWrongTip.textContent = i18n[lang].emptyTip;
+            elements.closeWrongBook.textContent = i18n[lang].closeBtn;
+            renderWrongList();
+
+            updateProgressDisplay();
+            filterQuestions();
+            renderCurrentQuestion();
+            resetQuestionState();
+            localStorage.setItem('quizLang', lang);
+        }
+
+        // 刷题模式控制
+        function initModeControls() {
+            elements.randomMode.addEventListener('click', function() {
+                elements.randomMode.classList.add('active');
+                elements.topicMode.classList.remove('active');
+                elements.topicSelect.classList.add('hidden');
+                isRandomMode = true;
+                filterQuestions();
+                currentQuestionIndex = 0;
+                renderCurrentQuestion();
+                resetQuestionState();
+            });
+            elements.topicMode.addEventListener('click', function() {
+                elements.randomMode.classList.remove('active');
+                elements.topicMode.classList.add('active');
+                elements.topicSelect.classList.remove('hidden');
+                isRandomMode = false;
+                filterQuestions();
+                currentQuestionIndex = 0;
+                renderCurrentQuestion();
+                resetQuestionState();
+            });
+            elements.topicSelect.addEventListener('change', function() {
+                filterQuestions();
+                currentQuestionIndex = 0;
+                renderCurrentQuestion();
+                resetQuestionState();
+            });
+            elements.difficultySelect.addEventListener('change', function() {
+                filterQuestions();
+                currentQuestionIndex = 0;
+                renderCurrentQuestion();
+                resetQuestionState();
+            });
+        }
+
+        // 题目筛选（难度+考点组合）
+        function filterQuestions() {
+            let questions = [...i18n[currentLang].questions];
+            // 难度筛选
+            const difficulty = elements.difficultySelect.value;
+            if(difficulty !== 'all') {
+                questions = questions.filter(q => q.difficulty === difficulty);
+            }
+            // 考点筛选
+            if(!isRandomMode) {
+                const topic = elements.topicSelect.value;
+                if(topic !== 'all') {
+                    questions = questions.filter(q => q.topic === topic);
+                }
+            }
+            // 随机打乱
+            if(isRandomMode) {
+                shuffleArray(questions);
+            }
+            currentQuestions = questions;
+        }
+
+        // Fisher-Yates 洗牌算法
+        function shuffleArray(arr) {
+            for(let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // 题目交互控制
+        function initQuestionControls() {
+            elements.optionsContainer.addEventListener('click', function(e) {
+                if(e.target.classList.contains('option-item')) {
+                    document.querySelectorAll('.option-item').forEach(item => item.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                    selectedOptionIndex = parseInt(e.target.dataset.index);
+                }
+            });
+            elements.submitAnswer.addEventListener('click', handleSubmit);
+            elements.nextQuestion.addEventListener('click', handleNextQuestion);
+        }
+
+        // 答案提交逻辑
+        function handleSubmit() {
+            if(selectedOptionIndex === -1) {
+                showFeedback(i18n[currentLang].selectOptionTip, 'error');
                 return;
             }
+            const question = currentQuestions[currentQuestionIndex];
+            const isCorrect = selectedOptionIndex === question.answer;
 
-            const currentQuestion = currentQuestions[currentQuestionIndex];
-            // 更新题目编号和内容
-            document.getElementById('question-num').textContent = `第${currentQuestionIndex + 1}题`;
-            document.getElementById('question-content').textContent = currentQuestion.question;
+            // 更新答题统计
+            totalAnswers++;
+            if(isCorrect) {
+                correctAnswers++;
+                // 按难度计算积分
+                let points = 0;
+                switch(question.difficulty) {
+                    case 'entry': points = 5; break;
+                    case 'basic': points = 10; break;
+                    case 'advanced': points = 20; break;
+                    case 'challenge': points = 50; break;
+                }
+                userScore += points;
+                showFeedback(question.feedback, 'success');
+            } else {
+                // 按难度扣分
+                let penalty = 0;
+                switch(question.difficulty) {
+                    case 'entry': penalty = 0; break;
+                    case 'basic': penalty = 2; break;
+                    case 'advanced': penalty = 5; break;
+                    case 'challenge': penalty = 10; break;
+                }
+                userScore = Math.max(0, userScore - penalty);
+                // 保存错题
+                saveWrongQuestion(question, selectedOptionIndex);
+                const tip = currentLang === 'zh' ? `错误！正确答案是${question.options[question.answer]}。` : `Incorrect! The correct answer is ${question.options[question.answer]}.`;
+                showFeedback(tip + ' ' + question.feedback, 'error');
+            }
 
-            // 生成选项
-            const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = '';
-            currentQuestion.options.forEach((option, index) => {
-                const optionItem = document.createElement('div');
-                optionItem.className = 'option-item';
-                optionItem.dataset.index = index;
-                optionItem.textContent = option;
+            // 检查升级
+            checkLevelUp();
+            // 保存数据
+            saveUserData();
+            // 更新进度显示
+            updateProgressDisplay();
+            // 禁用提交按钮，显示下一题
+            elements.submitAnswer.disabled = true;
+            elements.nextQuestion.classList.remove('hidden');
+        }
 
-                // 选项点击事件
-                optionItem.addEventListener('click', function() {
-                    // 移除所有选中状态
-                    document.querySelectorAll('.option-item').forEach(item => {
-                        item.classList.remove('selected');
-                    });
-                    // 添加当前选中状态
-                    this.classList.add('selected');
-                    selectedOptionIndex = index;
-                });
+        // 下一题逻辑
+        function handleNextQuestion() {
+            currentQuestionIndex++;
+            if(currentQuestionIndex >= currentQuestions.length) {
+                elements.questionContent.textContent = i18n[currentLang].quizCompleted;
+                elements.optionsContainer.style.display = 'none';
+                elements.nextQuestion.classList.add('hidden');
+                return;
+            }
+            renderCurrentQuestion();
+            resetQuestionState();
+        }
 
-                optionsContainer.appendChild(optionItem);
+        // 反馈提示
+        function showFeedback(text, type) {
+            elements.feedbackArea.textContent = text;
+            elements.feedbackArea.className = `feedback-area feedback-${type}`;
+            elements.feedbackArea.style.display = 'block';
+        }
+
+        // 渲染当前题目
+        function renderCurrentQuestion() {
+            if(currentQuestions.length === 0) {
+                elements.questionContent.textContent = currentLang === 'zh' ? "该筛选条件下暂无题目" : "No questions available for this filter";
+                elements.optionsContainer.style.display = 'none';
+                elements.submitAnswer.disabled = true;
+                return;
+            }
+            const question = currentQuestions[currentQuestionIndex];
+            elements.questionContent.textContent = question.question;
+            const optionItems = document.querySelectorAll('.option-item');
+            optionItems.forEach((item, idx) => {
+                idx < question.options.length ? (item.textContent = question.options[idx], item.style.display = 'block') : (item.style.display = 'none');
             });
+            elements.questionCounter.textContent = i18n[currentLang].questionCounter(currentQuestionIndex + 1, currentQuestions.length);
+        }
 
-            // 重置状态
+        // 重置题目状态
+        function resetQuestionState() {
             selectedOptionIndex = -1;
-            document.getElementById('feedback-area').classList.add('hidden');
-            document.getElementById('next-question').classList.add('hidden');
-            document.getElementById('submit-answer').disabled = false;
+            document.querySelectorAll('.option-item').forEach(item => item.classList.remove('selected'));
+            elements.feedbackArea.style.display = 'none';
+            elements.submitAnswer.disabled = false;
+            elements.nextQuestion.classList.add('hidden');
+            elements.optionsContainer.style.display = 'flex';
         }
 
-        // 9. 绑定提交答案事件（容错+即时反馈）
-        function bindSubmitEvent() {
-            const submitBtn = document.getElementById('submit-answer');
-            const feedbackArea = document.getElementById('feedback-area');
-            const nextBtn = document.getElementById('next-question');
+        // 保存错题
+        function saveWrongQuestion(q, userAns) {
+            let wrong = JSON.parse(localStorage.getItem('quizWrongQuestions') || '[]');
+            if(!wrong.some(w => w.id === q.id && w.lang === currentLang)) {
+                wrong.push({
+                    id: q.id,
+                    lang: currentLang,
+                    difficulty: q.difficulty,
+                    zh: i18n.zh.questions.find(x => x.id === q.id),
+                    en: i18n.en.questions.find(x => x.id === q.id),
+                    userAnswer: userAns
+                });
+                localStorage.setItem('quizWrongQuestions', JSON.stringify(wrong));
+                wrongQuestions = wrong;
+            }
+        }
 
-            submitBtn.addEventListener('click', function() {
-                // 容错：未选择选项
-                if (selectedOptionIndex === -1) {
-                    feedbackArea.textContent = 'Please select an option first!';
-                    feedbackArea.className = 'feedback-area feedback-error';
-                    feedbackArea.classList.remove('hidden');
-                    return;
+        // 升级检查
+        function checkLevelUp() {
+            while(userLevel < levels.length - 1 && userScore >= levels[userLevel + 1].score) {
+                userLevel++;
+                showUpgradeAnimation();
+            }
+        }
+
+        // 升级动画
+        function showUpgradeAnimation() {
+            const levelName = i18n[currentLang][levels[userLevel].name];
+            elements.upgradeTitle.textContent = `${i18n[currentLang].upgradeTitle} ${levelName}！`;
+            elements.upgradeSubtitle.textContent = i18n[currentLang].upgradeSubtitle;
+            // 创建粒子效果
+            createParticles();
+            // 显示动画
+            elements.upgradeOverlay.classList.add('show');
+            // 播放音效
+            playUpgradeSound();
+            // 2秒后关闭动画
+            setTimeout(() => {
+                elements.upgradeOverlay.classList.remove('show');
+            }, 2000);
+        }
+
+        // 粒子效果创建
+        function createParticles() {
+            // 清除旧粒子
+            const oldParticles = document.querySelectorAll('.particle');
+            oldParticles.forEach(p => p.remove());
+            // 创建新粒子
+            for(let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 1}s`;
+                elements.upgradeOverlay.appendChild(particle);
+            }
+        }
+
+        // 升级音效播放
+        function playUpgradeSound() {
+            try {
+                elements.upgradeSound.currentTime = 0;
+                elements.upgradeSound.volume = 0.8;
+                elements.upgradeSound.play().catch(err => console.log("音效播放失败:", err));
+                // 如需完整播放18秒，删除以下setTimeout代码即可
+                setTimeout(() => {
+                    elements.upgradeSound.pause();
+                }, 2000);
+            } catch(e) {
+                console.log("音效播放失败:", e);
+            }
+        }
+
+        // 进度弹窗初始化
+        function initProgressModal() {
+            elements.progressBtn.addEventListener('click', () => {
+                updateProgressDisplay();
+                elements.progressModal.classList.add('show');
+            });
+            elements.closeProgress.addEventListener('click', () => {
+                elements.progressModal.classList.remove('show');
+            });
+            // 点击空白处关闭弹窗
+            elements.progressModal.addEventListener('click', (e) => {
+                if(e.target === elements.progressModal) {
+                    elements.progressModal.classList.remove('show');
                 }
-
-                const currentQuestion = currentQuestions[currentQuestionIndex];
-                // 判断答案是否正确
-                if (selectedOptionIndex === currentQuestion.answer) {
-                    // 正确反馈
-                    feedbackArea.textContent = currentQuestion.feedback;
-                    feedbackArea.className = 'feedback-area feedback-success';
-                } else {
-                    // 错误反馈（基础提示，非完整解析）
-                    feedbackArea.textContent = `Incorrect! The correct answer is: ${currentQuestion.options[currentQuestion.answer]}. Hint: Review the ${currentQuestion.topic.replace('_', ' ')} theorem.`;
-                    feedbackArea.className = 'feedback-area feedback-error';
-                }
-
-                // 显示反馈和下一题按钮
-                feedbackArea.classList.remove('hidden');
-                nextBtn.classList.remove('hidden');
-                // 禁用提交按钮
-                submitBtn.disabled = true;
             });
         }
 
-        // 10. 绑定下一题事件
-        function bindNextQuestionEvent() {
-            const nextBtn = document.getElementById('next-question');
-            nextBtn.addEventListener('click', function() {
-                // 下一题索引
-                currentQuestionIndex++;
-                // 判断是否还有题目
-                if (currentQuestionIndex < currentQuestions.length) {
-                    loadCurrentQuestion();
-                } else {
-                    // 所有题目完成
-                    document.getElementById('question-content').textContent = 'Congratulations! You have completed all questions.';
-                    document.getElementById('options-container').innerHTML = '';
-                    document.getElementById('submit-answer').disabled = true;
-                    nextBtn.classList.add('hidden');
-                    document.getElementById('feedback-area').classList.add('hidden');
+        // 升级遮罩初始化
+        function initUpgradeOverlay() {
+            elements.upgradeOverlay.addEventListener('click', () => {
+                elements.upgradeOverlay.classList.remove('show');
+            });
+        }
+
+        // 错题本弹窗初始化
+        function initWrongBookModal() {
+            // 打开错题本
+            elements.wrongBookBtn.addEventListener('click', () => {
+                renderWrongList();
+                elements.wrongBookModal.classList.add('show');
+            });
+            // 关闭错题本
+            elements.closeWrongBook.addEventListener('click', () => {
+                elements.wrongBookModal.classList.remove('show');
+            });
+            // 点击空白处关闭
+            elements.wrongBookModal.addEventListener('click', (e) => {
+                if(e.target === elements.wrongBookModal) {
+                    elements.wrongBookModal.classList.remove('show');
+                }
+            });
+            // 清空所有错题
+            elements.clearAllWrong.addEventListener('click', () => {
+                if(confirm(i18n[currentLang].clearConfirm)) {
+                    localStorage.removeItem('quizWrongQuestions');
+                    wrongQuestions = [];
+                    renderWrongList();
                 }
             });
         }
 
-        // 11. 绑定刷新提示（容错性：防止误操作丢失进度）
-        function bindBeforeUnloadEvent() {
-            window.addEventListener('beforeunload', function(e) {
-                // 取消默认行为
-                e.preventDefault();
-                // 自定义提示（不同浏览器显示方式不同）
-                e.returnValue = 'Your quiz progress will be lost! Are you sure you want to leave?';
-                return e.returnValue;
+        // 渲染错题列表
+        function renderWrongList() {
+            elements.wrongList.innerHTML = '';
+            if(wrongQuestions.length === 0) {
+                elements.wrongList.classList.add('hidden');
+                elements.emptyWrongTip.classList.remove('hidden');
+                return;
+            }
+            elements.wrongList.classList.remove('hidden');
+            elements.emptyWrongTip.classList.add('hidden');
+
+            wrongQuestions.forEach((q, i) => {
+                const d = q[currentLang];
+                const card = document.createElement('div');
+                card.className = 'wrong-card';
+                card.innerHTML = `
+                    <button class="delete-btn" data-id="${q.id}">×</button>
+                    <h3>${i18n[currentLang].wrongNumPrefix} ${i+1}</h3>
+                    <span class="difficulty-tag">${getDifficultyText(q.difficulty)}</span>
+                    <p>${d.question}</p>
+                    <div class="option-group">
+                        <div class="option user-answer">${i18n[currentLang].yourAnswer}${d.options[q.userAnswer]}</div>
+                        <div class="option correct-answer">${i18n[currentLang].correctAnswer}${d.options[d.answer]}</div>
+                    </div>
+                    <div class="feedback">${i18n[currentLang].feedback}${d.feedback}</div>
+                `;
+                // 单题删除事件
+                card.querySelector('.delete-btn').addEventListener('click', function() {
+                    deleteWrongQuestion(parseInt(this.dataset.id));
+                });
+                elements.wrongList.appendChild(card);
             });
+        }
+
+        // 删除单道错题
+        function deleteWrongQuestion(id) {
+            if(confirm(i18n[currentLang].deleteConfirm)) {
+                wrongQuestions = wrongQuestions.filter(q => q.id !== id);
+                localStorage.setItem('quizWrongQuestions', JSON.stringify(wrongQuestions));
+                renderWrongList();
+            }
+        }
+
+        // 获取难度文本
+        function getDifficultyText(difficulty) {
+            switch(difficulty) {
+                case 'entry': return i18n[currentLang].difficultyEntry;
+                case 'basic': return i18n[currentLang].difficultyBasic;
+                case 'advanced': return i18n[currentLang].difficultyAdvanced;
+                case 'challenge': return i18n[currentLang].difficultyChallenge;
+                default: return '';
+            }
+        }
+
+        // 进度显示更新
+        function updateProgressDisplay() {
+            const levelName = i18n[currentLang][levels[userLevel].name];
+            document.getElementById('current-level').textContent = levelName;
+            document.getElementById('current-score').textContent = userScore;
+            // 下一级所需积分
+            const nextLevelScore = userLevel < levels.length - 1 ? levels[userLevel + 1].score : levels[userLevel].score;
+            document.getElementById('next-level-score').textContent = nextLevelScore;
+            // 进度条
+            const progress = userLevel < levels.length - 1 ? (userScore / nextLevelScore) * 100 : 100;
+            document.getElementById('progress-fill').style.width = `${Math.min(progress, 100)}%`;
+            // 正确率
+            const accuracy = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
+            document.getElementById('total-accuracy').textContent = `${accuracy}%`;
         }
     </script>
 </body>
