@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CircleMaster - 探索圆几何</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">⭕ CircleMaster</div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active" data-zh="首页" data-en="Home">首页</a></li>
+            <li><a href="game.html" data-zh="游戏" data-en="Game">游戏</a></li> 
+            <li><a href="quiz.html" data-zh="测验" data-en="Quiz">测验</a></li> 
+            <li><a href="#" id="nav-usp-btn" data-zh="了解特色" data-en="Features">了解特色</a></li>
+        </ul>
+        
+        <div class="nav-right">
+            <div id="lang-toggle" class="lang-switch" style="cursor:pointer;">
+                <span id="lang-text">EN</span>
+            </div>
+            <button id="dark-mode-toggle" class="dark-mode-btn">
+                <span class="icon">☀️</span>
+            </button>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1 data-zh="探索圆的几何奥秘" data-en="Explore Circle Geometry">探索圆的几何奥秘</h1>
+            <p data-zh="通过动态交互媒体，深度掌握核心圆定理。" data-en="Master core circle theorems through dynamic interactive media.">通过动态交互媒体，深度掌握核心圆定理。</p>
+            <div class="hero-btns">
+                <button class="btn-primary" onclick="window.location.href='game.html'" data-zh="开始游戏" data-en="Start Game">开始游戏</button>
+                <button class="btn-quiz" onclick="window.location.href='quiz.html'" data-zh="开始测验" data-en="Start Quiz">开始测验</button>
+                <button class="btn-secondary" id="learn-usp-btn" data-zh="了解特色" data-en="Features">了解特色</button>
+            </div>
+        </div>
+        
+        <div class="hero-visual">
+            <div class="video-container">
+                <iframe 
+                    src="https://www.youtube.com/embed/1S9s_ryRoWY" 
+                    title="7 Circle Theorems Animation" 
+                    frameborder="0" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+    </header>
+
+    <section class="section" id="usp-section">
+        <h2 class="section-title" data-zh="核心圆定理 (8个)" data-en="8 Core Circle Theorems">核心圆定理 (8个)</h2>
+        
+        <div class="theorems-grid">
+            
+            <div class="card theorem-card">
+                <div class="theorem-box-vertical">
+                    <div class="theorem-visual-grid">
+                        <svg viewBox="0 0 200 150">
+                            <circle cx="100" cy="75" r="40" class="svg-circle" />
+                            <line x1="100" y1="75" x2="128" y2="47" class="svg-line-main" />
+                            <circle cx="100" cy="75" r="3" class="svg-point-center" />
+                            <text x="105" y="85" class="svg-text">r</text>
+                        </svg>
+                    </div>
+                    <div class="theorem-info-bar">
+                        <span class="label" data-zh="面积" data-en="Area">面积</span>
+                        <p class="formula">A = πr²</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card theorem-card">
+                <div class="theorem-box-vertical">
+                    <div class="theorem-visual-grid">
+                        <svg viewBox="0 0 200 150">
+                            <circle cx="100" cy="75" r="40" class="svg-circle-outline" />
+                            <line x1="100" y1="75" x2="140" y2="75" class="svg-line-main" />
+                            <circle cx="100" cy="75" r="3" class="svg-point-center" />
+                        </svg>
+                    </div>
+                    <div class="theorem-info-bar">
+                        <span class="label" data-zh="周长" data-en="Circumference">周长</span>
+                        <p class="formula">C = 2πr</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card theorem-card">
+                <div class="theorem-box-vertical">
+                    <div class="theorem-visual-grid">
+                        <svg viewBox="0 0 200 150">
+                            <circle cx="100" cy="75" r="40" class="svg-circle" />
+                            <line x1="60" y1="75" x2="140" y2="75" class="svg-line-main" style="stroke-dasharray: 4;"/>
+                            <circle cx="100" cy="75" r="3" class="svg-point-center" />
+                        </svg>
+                    </div>
+                    <div class="theorem-info-bar">
+                        <span class="label" data-zh="直径" data-en="Diameter">直径</span>
+                        <p class="formula">d = 2r</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card theorem-card">
+                <div class="theorem-box-vertical">
+                    <div class="theorem-visual-grid">
+                        <svg viewBox="0 0 200 150">
+                            <circle cx="85" cy="75" r="40" class="svg-circle" />
+                            <line x1="125" y1="20" x2="125" y2="130" class="svg-line-tangent" />
+                            <line x1="85" y1="75" x2="125" y2="75" class="svg-line-main" />
+                            <circle cx="125" cy="75" r="3" class="svg-point-special" />
+                            <polyline points="125,67 117,67 117,75" fill="none" stroke="#059669" stroke-width="1"/>
+                        </svg>
+                    </div>
+                    <div class="theorem-info-bar">
+                        <span class="label" data-zh="切线" data-en="Tangent">切线</span>
+                        <p class="formula">Radius ⊥ Tangent</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card theorem-card">
+                <div class="theorem-box-vertical">
+                    <div class="theorem-visual-grid">
+                        <svg viewBox="0 0 200 150">
+                            <circle cx="100" cy="75" r="40" class="svg-circle" />
+                            <line x1="72" y1="46" x2="128" y2="46" class="svg-line-chord" stroke-width="2.5"/>
+                            <circle cx="72" cy="46" r="2.5" class="svg-point" />
+                            <circle cx="128" cy="46" r="2.5" class="svg-point" />
+                        </svg>
+                    </div>
+                    <div class="theorem-info-bar">
+                        <span class="label" data-zh="弦长" data-en="Chord">弦长</span>
+                        <p class="formula">L = 2r sin(θ/2)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card theorem-card">
+                <div class="theorem-box-vertical">
+                    <div class="theorem-visual-grid">
+                        <svg viewBox="0 0 200 150">
+                            <circle cx="100" cy="75" r="40" class="svg-circle" />
+                            <polyline points="68,99 100,35 132,99" fill="none" class="svg-line-main" stroke-width="2"/>
+                            <circle cx="100" cy="35" r="2.5" class="svg-point" />
+                        </svg>
+                    </div>
+                    <div class="theorem-info-bar">
+                        <span class="label" data-zh="圆周角" data-en="Angle">圆周角</span>
+                        <p class="formula">θ = 1/2 Center ∠</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card theorem-card">
+                <div class="theorem-box-vertical">
+                    <div class="theorem-visual-grid">
+                        <svg viewBox="0 0 200 150">
+                            <circle cx="100" cy="75" r="40" class="svg-circle-outline" stroke-opacity="0.4"/>
+                            <polygon points="100,35 138,63 112,112 65,90" fill="rgba(59, 130, 246, 0.1)" class="svg-line-main" stroke-width="1.5"/>
+                            <circle cx="100" cy="35" r="2" class="svg-point" />
+                            <circle cx="138" cy="63" r="2" class="svg-point" />
+                            <circle cx="112" cy="112" r="2" class="svg-point" />
+                            <circle cx="65" cy="90" r="2" class="svg-point" />
+                        </svg>
+                    </div>
+                    <div class="theorem-info-bar">
+                        <span class="label" data-zh="内接四边形" data-en="Cyclic">内接四边形</span>
+                        <p class="formula">Opposite ∠ = 180°</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card theorem-card">
+                <div class="theorem-box-vertical">
+                    <div class="theorem-visual-grid">
+                        <svg viewBox="0 0 200 150">
+                            <circle cx="100" cy="75" r="40" class="svg-circle" />
+                            <line x1="68" y1="51" x2="132" y2="51" class="svg-line-main" stroke-width="2"/>
+                            <line x1="100" y1="35" x2="100" y2="115" class="svg-line-tangent" stroke-width="1.5"/>
+                            <polyline points="100,58 107,58 107,51" fill="none" stroke="#059669" stroke-width="1"/>
+                            <circle cx="100" cy="75" r="2.5" class="svg-point-center" />
+                            <text x="103" y="88" class="svg-text">O</text>
+                            <text x="58" y="55" class="svg-text">A</text>
+                            <text x="135" y="55" class="svg-text">B</text>
+                            <text x="103" y="48" class="svg-text" style="fill:#059669; font-size: 10px;">M</text>
+                        </svg>
+                    </div>
+                    <div class="theorem-info-bar">
+                        <span class="label" data-zh="垂径" data-en="Bisector">垂径</span>
+                        <p class="formula">AM = MB</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="ai-container">
+        <div id="ai-chat-window" class="chat-window">
+            <div class="chat-header">
+                <span data-zh="AI 数学助手" data-en="AI Math Assistant">AI 数学助手</span>
+                <button id="close-chat">×</button>
+            </div>
+            <div class="chat-body" id="chat-messages">
+                <div class="message ai-msg" data-zh="你好！有什么我可以帮你的？" data-en="Hi! How can I help?">你好！有什么我可以帮你的？</div>
+            </div>
+            <div class="chat-footer">
+                <input type="text" id="chat-input" placeholder="输入问题...">
+                <button id="send-btn">➤</button>
+            </div>
+        </div>
+        <div class="ai-chat-widget" id="ai-widget">
+            <span class="ai-icon">🤖</span>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="contact-form">
+            <input type="email" id="subscribe-email" placeholder="Email...">
+            <button type="button" id="subscribe-btn" data-zh="订阅" data-en="Subscribe">订阅</button>
+        </div>
+        <p class="copyright">&copy; 2026 CircleMaster Project.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
