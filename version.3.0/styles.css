@@ -1,0 +1,591 @@
+:root {
+    --primary-color: #2563eb;
+    --success-color: #f97316;
+    --error-color: #ef4444;
+    --text-color: #333;
+    --border-color: rgba(0,0,0,0.1);
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --border-radius: 12px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    /* 新增：AI功能主题色 */
+    --ai-color: #10b981;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    transition: all 0.2s ease;
+}
+
+body {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    color: var(--text-color);
+    font-size: var(--font-size-md);
+    line-height: 1.6;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.breadcrumb a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.btn {
+    padding: 6px 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9em;
+    box-shadow: var(--shadow);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn-primary {
+    background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+}
+
+.btn-danger {
+    background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+}
+
+/* 新增：AI功能按钮样式 */
+.ai-btn {
+    background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+}
+
+.ai-btn:hover {
+    background: linear-gradient(180deg, #059669 0%, #047857 100%);
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.control-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-select {
+    padding: 4px 10px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9em;
+    min-width: 80px;
+}
+
+/* 测验容器与错题本容器通用样式 */
+.quiz-container, .wrong-book-container {
+    background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+
+.quiz-container h1, .wrong-book-container h1 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* 测验页面专属样式 */
+.quiz-mode {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.mode-btn {
+    padding: 8px 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+}
+
+.mode-btn.active {
+    background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+}
+
+.topic-select, .difficulty-select {
+    padding: 8px 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.question-card {
+    margin-top: 20px;
+}
+
+.question-title {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 500;
+}
+
+.question-counter {
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    color: #64748b;
+}
+
+.options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.option-item {
+    padding: 12px 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+}
+
+.option-item:hover {
+    background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.option-item.selected {
+    border: 2px solid var(--primary-color);
+    background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.feedback-area {
+    padding: 15px;
+    border-radius: var(--border-radius);
+    margin-bottom: 15px;
+    display: none;
+}
+
+.feedback-success {
+    background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
+    border: 1px solid var(--success-color);
+    color: var(--success-color);
+}
+
+.feedback-error {
+    background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%);
+    border: 1px solid var(--error-color);
+    color: var(--error-color);
+}
+
+/* 升级动画样式 */
+.upgrade-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease;
+}
+
+.upgrade-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.upgrade-content {
+    text-align: center;
+    color: white;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.8s ease;
+}
+
+.upgrade-overlay.show .upgrade-content {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.upgrade-title {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.upgrade-subtitle {
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0;
+    animation: particle 2s ease forwards;
+}
+
+@keyframes particle {
+    0% {
+        transform: translateY(0) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-200px) scale(1);
+        opacity: 0;
+    }
+}
+
+/* 进度弹窗样式 */
+.progress-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9998;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.progress-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.progress-content {
+    background: white;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    min-width: 300px;
+    text-align: center;
+}
+
+.progress-content h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+.progress-item {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* 错题本专属样式 */
+.wrong-book-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.wrong-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.wrong-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    position: relative;
+}
+
+.wrong-card .delete-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: var(--error-color);
+    cursor: pointer;
+    font-size: 1.2em;
+}
+
+.wrong-card .delete-btn:hover {
+    color: #dc2626;
+    transform: scale(1.1);
+}
+
+.wrong-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.wrong-card .difficulty-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    font-size: 0.8em;
+    margin-bottom: 12px;
+}
+
+.wrong-card .option-group {
+    margin: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wrong-card .option {
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    font-size: 0.95em;
+}
+
+.wrong-card .option.user-answer {
+    background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%);
+    border: 1px solid var(--error-color);
+}
+
+.wrong-card .option.correct-answer {
+    background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
+    border: 1px solid var(--success-color);
+}
+
+.wrong-card .feedback {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+    border-radius: var(--border-radius);
+    color: var(--primary-color);
+    font-size: 0.95em;
+}
+
+.empty-tip {
+    text-align: center;
+    padding: 50px 0;
+    color: #64748b;
+    font-size: 1.1em;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: var(--border-radius);
+}
+
+/* ========== 新增：AI功能弹窗样式 ========== */
+.ai-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9997;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.ai-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.ai-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    max-width: 700px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+.ai-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #64748b;
+    line-height: 1;
+}
+
+.ai-modal-close:hover {
+    color: #333;
+    transform: scale(1.1);
+}
+
+.ai-modal-content h2 {
+    color: var(--ai-color);
+    margin-bottom: 20px;
+    padding-right: 30px;
+}
+
+.ai-question-info {
+    padding: 12px 15px;
+    background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 1px solid #86efac;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+}
+
+.ai-answer-area {
+    line-height: 1.8;
+    margin-bottom: 20px;
+    min-height: 100px;
+}
+
+.ai-input-area {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.ai-input-area input {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1em;
+}
+
+.ai-input-area input:focus {
+    outline: none;
+    border-color: var(--ai-color);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+footer {
+    text-align: center;
+    margin-top: 30px;
+    color: #64748b;
+    font-size: 0.9em;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-left {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .control-group {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .quiz-container, .wrong-book-container {
+        padding: 20px;
+    }
+
+    .upgrade-title {
+        font-size: 32px;
+    }
+
+    .upgrade-subtitle {
+        font-size: 18px;
+    }
+
+    .wrong-card {
+        padding: 15px;
+    }
+
+    .ai-modal-content {
+        padding: 20px;
+        width: 95%;
+    }
+}
