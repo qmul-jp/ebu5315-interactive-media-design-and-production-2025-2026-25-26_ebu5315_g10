@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>圆几何台球 3.0 · 交互式几何实验室</title>
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="light-mode">
+<div class="game-container">
+    <div class="game-main">
+        <div class="header-bar" style="display:flex; justify-content:space-between; flex-wrap:wrap;">
+            <div class="title">
+                <h1 id="mainTitle">🎯 圆几何台球 3.0 · 声光交互实验室</h1>
+                <p id="subtitle">反射定律 | 圆周角 | 垂径定理 | 音效反馈 | 成就系统 | 慢动作回放</p>
+            </div>
+            <div class="toolbar">
+                <button id="langBtn">🌐 中文/EN</button>
+                <button id="themeBtn">🌙 深色</button>
+                <button id="soundToggleBtn">🔊 音效开</button>
+                <button id="rulesBtn">📜 规则</button>
+                <button id="undoBtn">↩️ 撤销</button>
+                <button id="replayBtn">🎬 回放上一杆</button>
+            </div>
+        </div>
+        <div class="canvas-wrapper" style="position:relative;">
+            <canvas id="gameCanvas" width="1000" height="550"></canvas>
+            <canvas id="powerRing" width="1000" height="550" style="position:absolute; top:0; left:0; pointer-events:none;"></canvas>
+        </div>
+        <div class="info-panel">
+            <div class="score-area">⭐ <span id="scoreValue">0</span> &nbsp;| 🎯 <span id="challengeName">自由模式</span></div>
+            <div class="control-group mode-selector">
+                <span id="modeLabel">🎮 游戏模式:</span>
+                <select id="modeSelect" class="mode-dropdown">
+                    <option value="free">🎯 自由模式</option>
+                    <option value="reflect1">↩️ 反射1次</option>
+                    <option value="reflect2">↩️↩️ 反射2次</option>
+                    <option value="tangent">✂️ 切线狙击</option>
+                    <option value="angle">📐 圆周角探索</option>
+                    <option value="chord">📏 垂径定理</option>
+                    <option value="lab">🔬 反射定律实验室</option>
+                </select>
+                <div class="mode-shortcuts" style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="mode-btn shortcut" data-mode="free">自由模式</button>
+                    <button class="mode-btn shortcut" data-mode="tangent">切线狙击</button>
+                    <button class="mode-btn shortcut" data-mode="angle">圆周角探索</button>
+                </div>
+                <button id="clearPointsBtn" class="secondary-btn">🗑️ 清除点</button>
+            </div>
+            <div class="control-group">
+                <span id="speedLabel">🐢 动画速度:</span>
+                <input type="range" id="speedSlider" min="0.1" max="1.5" step="0.1" value="1" style="width:100px;">
+                <span id="speedValue">1.0x</span>
+                <button id="stepFrameBtn" style="background:#ffaa33; color:#2c2c2c;">⏸️ 逐帧</button>
+                <span id="powerLabel">🎯 力度:</span>
+                <input type="range" id="powerSlider" min="0" max="100" value="0" style="width:100px;">
+                <span id="powerValue">0%</span>
+            </div>
+        </div>
+        <div id="controls" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+            <label id="gridLabel" style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input type="checkbox" id="toggleGrid" checked> 极坐标网格
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input type="checkbox" id="toggleCartesian" checked> 第卡尔坐标系
+            </label>
+            <label id="predictLabel" style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input type="checkbox" id="togglePredict" checked> 轨迹预测
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input type="checkbox" id="toggleParticles" checked> 碰撞粒子特效
+            </label>
+            <button id="resetBtn">🔄 重置球局</button>
+            <button id="helpBtn">❓ 定理提示</button>
+            <button id="proofBtn">📜 证明模式</button>
+        </div>
+
+        <!-- 切线狙击模式工具栏 -->
+        <div id="tangentModeTools" class="geom-tools" style="display:none;">
+            <span id="tangentToolsLabel">✂️ 切线狙击:</span>
+            <button id="btnTangentEasy" class="diff-btn">简单</button>
+            <button id="btnTangentMedium" class="diff-btn mode-active">中等</button>
+            <button id="btnTangentHard" class="diff-btn">困难</button>
+            <button id="btnTangentAnswer">💡 显示答案</button>
+            <button id="btnTangentProof">📜 证明: 下一步</button>
+            <span id="tangentProofStepLabel">步骤 0/3</span>
+        </div>
+
+        <!-- 圆周角模式工具栏 -->
+        <div id="angleModeTools" class="geom-tools" style="display:none;">
+            <span id="angleToolsLabel">📐 圆周角工具:</span>
+            <button id="btnEqualAngles">圆周角相等</button>
+            <button id="btnCenterAngle">圆心角关系</button>
+            <button id="btnSemicircle">半圆直角</button>
+            <button id="btnRecordAngle">📍 记录当前角度</button>
+            <button id="btnProofNext">📜 证明: 下一步</button>
+            <span id="proofStepLabel">步骤 0/3</span>
+        </div>
+
+        <!-- 垂径定理模式工具栏 -->
+        <div id="chordModeTools" class="geom-tools" style="display:none;">
+            <span id="chordToolsLabel">📏 垂径定理:</span>
+            <button id="btnChordThm1">定理1: 垂直→平分</button>
+            <button id="btnChordThm2">定理2: 平分→垂直</button>
+            <button id="btnChordSnap">🔒 垂直辅助</button>
+            <button id="btnChordAnswer">💡 显示答案</button>
+            <button id="btnChordRecord">📝 记录数据</button>
+            <button id="btnChordCSV">📥 CSV</button>
+            <button id="btnChordProofNext">📜 证明: 下一步</button>
+            <span id="chordProofStepLabel">步骤 0/3</span>
+            <span id="chordLevelLabel" style="margin-left:8px; font-weight:bold;">Level 1</span>
+        </div>
+
+        <!-- 反射实验室工具栏 -->
+        <div id="labModeTools" class="geom-tools" style="display:none;">
+            <span id="labToolsLabel">🔬 反射实验室:</span>
+            <button id="btnLabMirror">👾 镜像证明</button>
+            <button id="btnLabRecord">📝 记录数据</button>
+            <button id="btnLabCSV">📥 CSV</button>
+            <span id="labLevelLabel" style="margin-left:8px; font-weight:bold;">Level 1</span>
+        </div>
+
+        <div class="mobile-controls">
+            <span id="dirLabel">📱 辅助方向:</span>
+            <button id="dirUp">↑</button>
+            <button id="dirLeft">←</button>
+            <button id="dirRight">→</button>
+            <button id="dirDown">↓</button>
+            <span id="powerHintLabel">力度:</span>
+            <input type="range" id="mobilePowerSlider" min="0" max="100" value="80" style="width:80px;">
+            <span id="mobilePowerValue">80%</span>
+            <button id="dirShoot" style="background:#ffaa33;">击球</button>
+            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                <span id="angleFineLabel">角度微调:</span>
+                <button id="angleMinus5">-5°</button>
+                <button id="angleMinus1">-1°</button>
+                <button id="anglePlus1">+1°</button>
+                <button id="anglePlus5">+5°</button>
+                <button id="mirrorAimBtn">👾 镜像瞄准</button>
+            </div>
+        </div>
+    </div>
+    <div class="right-panel">
+        <div id="tipPanel" class="tip-panel" style="display:none;"></div>
+        <div class="angle-history-panel">
+            <div id="historyTitle" class="history-title">📊 最近碰撞角度</div>
+            <ul id="historyList" class="history-list">
+                <li>— 暂无碰撞 —</li>
+            </ul>
+            <div id="modeSpecificInfo" style="margin-top:8px; font-size:0.85rem; color:#888;"></div>
+        </div>
+        <!-- 圆周角模式专用面板 -->
+        <div id="angleRecordPanel" style="display:none; background:#f0f4f0; border-radius:16px; padding:12px;">
+            <div id="angleRecordTitle" class="history-title">📐 角度记录表</div>
+            <ul id="angleRecordList" class="history-list" style="max-height:120px; overflow-y:auto;">
+                <li>— 暂无记录 —</li>
+            </ul>
+            <canvas id="angleChart" width="200" height="100" style="width:100%; margin-top:8px; background:rgba(0,0,0,0.05); border-radius:8px;"></canvas>
+        </div>
+        <div class="achievements-panel">
+            <div id="achievementsTitle" class="achievements-title">🏆 成就徽章</div>
+            <ul id="achievementsList" class="achievements-list"></ul>
+        </div>
+    </div>
+</div>
+
+<div id="rulesModal" class="modal"><div class="modal-content"><h2 id="rulesModalTitle">📜 游戏规则</h2><div id="rulesModalContent"></div><button class="close-modal-btn" id="closeRulesBtn">关闭</button></div></div>
+
+<!-- Module Loading Order: Config → Audio → Achievements → I18N → Utils → Physics → Renderer → Main -->
+<script src="js/config.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/achievements.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/physics.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

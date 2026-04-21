@@ -1,0 +1,786 @@
+/**
+ * styles.css - Game Styles
+ * Light/Dark mode, layout, buttons, animations
+ */
+
+function setMode(mode){
+            currentMode = mode;
+            updateLanguage();
+            resetGame();
+            updateModeButtons(); // 更新模式按钮状态
+            // 显示/隐藏圆周角模式专用工具栏
+            let angleTools = document.getElementById('angleModeTools');
+            let anglePanel = document.getElementById('angleRecordPanel');
+            if(angleTools) angleTools.classList.toggle('active', mode === 'angle');
+            if(anglePanel) anglePanel.style.display = (mode === 'angle') ? 'block' : 'none';
+            if(mode === 'angle'){
+                angleSubMode = 'explore';
+                proofStep = 0;
+                angleModePoints.multiP = [];
+                angleModeRecords = [];
+                updateAngleRecordUI();
+            }
+            // 显示/隐藏反射实验室模式专用工具栏
+            let labTools = document.getElementById('labModeTools');
+            let labPanel = document.getElementById('labRecordPanel');
+            if(labTools) labTools.classList.toggle('active', mode === 'lab');
+            if(labPanel) labPanel.style.display = (mode === 'lab') ? 'block' : 'none';
+            if(mode === 'lab'){
+                labProofMode = false;
+                labRecords = [];
+                updateLabRecordUI();
+                setupLabLevel(1);
+            }
+            // 显示/隐藏切线狙击模式专用工具栏
+            let tangentTools = document.getElementById('tangentModeTools');
+            if(tangentTools) tangentTools.classList.toggle('active', mode === 'tangent');
+            if(mode === 'tangent'){
+                tangentDifficulty = 'medium';
+                tangentStreak = 0;
+                tangentShowAnswer = false;
+                tangentProofStep = 0;
+            }
+            // 显示/隐藏垂径定理模式专用工具栏
+            let chordTools = document.getElementById('chordModeTools');
+            let chordPanel = document.getElementById('chordRecordPanel');
+            if(chordTools) chordTools.classList.toggle('active', mode === 'chord');
+            if(chordPanel) chordPanel.style.display = (mode === 'chord') ? 'block' : 'none';
+            if(mode === 'chord'){
+                chordSubMode = 'perpendicular';
+                chordProofStep = 0;
+                chordRecords = [];
+                chordSnapAssist = false;
+                updateChordRecordUI();
+                setChordLevel(1);
+            }
+            updateProofBtnText();
+            drawCanvas();
+            playSound('mode');
+        }
+        
+        // 事件绑定
+        const scoreSpan = document.getElementById('scoreValue');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedVal = document.getElementById('speedVal');
+        const powerSlider = document.getElementById('powerSlider');
+        const powerVal = document.getElementById('powerVal');
+        const mobilePowerSlider = document.getElementById('mobilePowerSlider');
+        const mobilePowerVal = document.getElementById('mobilePowerVal');
+        
+        document.getElementById('showGrid').addEventListener('change', e => { showGrid = e.target.checked; drawCanvas(); });
+        document.getElementById('showCartesian').addEventListener('change', e => { showCartesian = e.target.checked; drawCanvas(); });
+        document.getElementById('showRuler').addEventListener('change', e => { showRuler = e.target.checked; drawCanvas(); });
+        document.getElementById('showPredict').addEventListener('change', e => { showPredict = e.target.checked; drawCanvas(); });
+        document.getElementById('showParticles').addEventListener('change', e => { showParticles = e.target.checked; drawCanvas(); });
+        function updateProofBtnText(){
+            let step = 0, maxStep = 3;
+            if(currentMode === 'angle') step = proofStep;
+            else if(currentMode === 'chord') step = chordProofStep;
+            else if(currentMode === 'tangent') step = tangentProofStep;
+            let label;
+            if(!proofMode){
+                label = lang === 'zh' ? '📜 证明模式' : '📜 Proof Mode';
+            } else {
+                label = lang === 'zh' ? `📜 步骤${step}/${maxStep}` : `📜 Step ${step}/${maxStep}`;
+            }
+            let btn = document.getElementById('proofBtn');
+            if(btn) btn.innerHTML = `<span id="proofText">${label}</span>`;
+        }
+        
+        document.getElementById('proofBtn').addEventListener('click', () => { 
+            proofMode = !proofMode; 
+            updateProofBtnText();
+            drawCanvas(); 
+        });
+        
+        // 圆周角模式工具按钮
+        document.getElementById('btnEqualAngles').addEventListener('click', () => {
+            angleSubMode = 'explore';
+            proofStep = 0;
+            // 恢复默认A、B位置（优弧设计）
+            let ang1 = 20 * Math.PI/180, ang2 = 140 * Math.PI/180;
+            angleModePoints.A = { x: circle.x + R*Math.cos(ang1), y: circle.y + R*Math.sin(ang1) };
+            angleModePoints.B = { x: circle.x + R*Math.cos(ang2), y: circle.y + R*Math.sin(ang2) };
+            angleModePoints.multiP = [];
+            showTip(lang === 'zh' ? '🔍 子模式：同弧所对圆周角相等' : '🔍 Sub-mode: Equal angles on same arc', 2000);
+            drawCanvas();
+        });
+        document.getElementById('btnCenterAngle').addEventListener('click', () => {
+            angleSubMode = 'center';
+            proofStep = 0;
+            // 恢复默认A、B位置
+            let ang1 = 20 * Math.PI/180, ang2 = 140 * Math.PI/180;
+            angleModePoints.A = { x: circle.x + R*Math.cos(ang1), y: circle.y + R*Math.sin(ang1) };
+            angleModePoints.B = { x: circle.x + R*Math.cos(ang2), y: circle.y + R*Math.sin(ang2) };
+            angleModePoints.multiP = [];
+            showTip(lang === 'zh' ? '🔍 子模式：圆心角 = 2 × 圆周角' : '🔍 Sub-mode: Central angle = 2 × inscribed', 2000);
+            drawCanvas();
+        });
+        document.getElementById('btnSemicircle').addEventListener('click', () => {
+            angleSubMode = 'semicircle';
+            proofStep = 0;
+            angleModePoints.A = { x: circle.x - R, y: circle.y };
+            angleModePoints.B = { x: circle.x + R, y: circle.y };
+            targetBall.x = circle.x; targetBall.y = circle.y - (R - targetBall.r - 2);
+            clampInside(targetBall, targetBall.r);
+            angleModePoints.multiP = [];
+            angleModeRecords = [];
+            updateAngleRecordUI();
+            showTip(lang === 'zh' ? '📐 半圆直角挑战：将红球拖到圆周任意位置，验证圆周角 = 90°' : '📐 Semicircle challenge: Drag red ball to verify ∠ = 90°', 3000);
+            drawCanvas();
+        });
+        document.getElementById('btnRecordAngle').addEventListener('click', () => {
+            if(currentMode !== 'angle' || !angleModePoints.A || !angleModePoints.B) return;
+            let P = { x: targetBall.x, y: targetBall.y };
+            let incAngle = computeInscribedAngle(angleModePoints.A, angleModePoints.B, P);
+            let centerAngle = computeCentralAngle(angleModePoints.A, angleModePoints.B);
+            let pAngle = Math.atan2(P.y - circle.y, P.x - circle.x);
+            angleModeRecords.push({ pAngle, incAngle, centerAngle, ratio: centerAngle/incAngle });
+            updateAngleRecordUI();
+            playSound('mode');
+            showTip(lang === 'zh' ? `📍 已记录第 ${angleModeRecords.length} 个角度` : `📍 Recorded angle #${angleModeRecords.length}`, 1000);
+        });
+        document.getElementById('btnProofNext').addEventListener('click', () => {
+            if(currentMode !== 'angle') return;
+            proofStep = (proofStep + 1) % 4;
+            document.getElementById('proofStepLabel').innerText = lang === 'zh' ? `步骤 ${proofStep}/3` : `Step ${proofStep}/3`;
+            updateProofBtnText();
+            drawCanvas();
+        });
+        
+        // 切线狙击模式工具按钮
+        document.getElementById('btnTangentEasy').addEventListener('click', () => {
+            tangentDifficulty = 'easy';
+            showTip(lang === 'zh' ? '✂️ 难度：简单（距离±8px，角度±10°）' : '✂️ Difficulty: Easy (dist ±8px, angle ±10°)', 2000);
+            drawCanvas();
+        });
+        document.getElementById('btnTangentMedium').addEventListener('click', () => {
+            tangentDifficulty = 'medium';
+            showTip(lang === 'zh' ? '✂️ 难度：中等（距离±3px，角度±5°）' : '✂️ Difficulty: Medium (dist ±3px, angle ±5°)', 2000);
+            drawCanvas();
+        });
+        document.getElementById('btnTangentHard').addEventListener('click', () => {
+            tangentDifficulty = 'hard';
+            showTip(lang === 'zh' ? '✂️ 难度：困难（距离±1px，角度±2°）' : '✂️ Difficulty: Hard (dist ±1px, angle ±2°)', 2000);
+            drawCanvas();
+        });
+        document.getElementById('btnTangentAnswer').addEventListener('click', () => {
+            if(currentMode !== 'tangent') return;
+            tangentShowAnswer = !tangentShowAnswer;
+            let btn = document.getElementById('btnTangentAnswer');
+            btn.innerText = tangentShowAnswer ? (lang === 'zh' ? '💡 隐藏答案' : '💡 Hide Answer') : (lang === 'zh' ? '💡 显示答案' : '💡 Show Answer');
+            showTip(tangentShowAnswer ? (lang === 'zh' ? '💡 金色虚线为两条切线路径' : '💡 Golden dashed lines show two tangent paths') : (lang === 'zh' ? '💡 答案已隐藏' : '💡 Answer hidden'), 1500);
+            drawCanvas();
+        });
+        document.getElementById('btnTangentProof').addEventListener('click', () => {
+            if(currentMode !== 'tangent') return;
+            tangentProofStep = (tangentProofStep + 1) % 4;
+            document.getElementById('tangentProofStepLabel').innerText = lang === 'zh' ? `步骤 ${tangentProofStep}/3` : `Step ${tangentProofStep}/3`;
+            updateProofBtnText();
+            drawCanvas();
+        });
+        
+        // 反射实验室模式工具按钮
+        function createLabTarget(angle){
+            return {
+                angle: angle,
+                hit: false,
+                dragging: false,
+                x: circle.x + (R + 15) * Math.cos(angle),
+                y: circle.y + (R + 15) * Math.sin(angle)
+            };
+        }
+        
+        function setupLabLevel(level){
+            labLevel = level;
+            document.getElementById('labLevelLabel').innerText = lang === 'zh' ? `Level ${level}` : `Level ${level}`;
+            let levelInfoZh = ['🎯 1个目标，单次反射', '🎯 2个目标，单次反射', '🎯 1个目标，需要两次反射', '📐 验证45°入射角', '🏆 3个随机目标，一杆全中'];
+            let levelInfoEn = ['🎯 1 target, single bounce', '🎯 2 targets, single bounce', '🎯 1 target, need two bounces', '📐 Verify 45° incidence', '🏆 3 random targets, all in one shot'];
+            let infoEl = document.getElementById('labLevelInfo');
+            if(infoEl) infoEl.innerText = lang === 'zh' ? levelInfoZh[level-1] : levelInfoEn[level-1];
+            labTargets = [];
+            labRecords = [];
+            updateLabRecordUI();
+            let msg = '';
+            
+            switch(level){
+                case 1:
+                    whiteBall.x = circle.x; whiteBall.y = circle.y - R*0.3;
+                    labTargets.push(createLabTarget(90 * Math.PI/180));
+                    msg = lang==='zh'
+                        ? '🎯 Level 1: 让白球击中右边界，反射路径经过右侧目标。提示：瞄准边界上的入射点！'
+                        : '🎯 Level 1: Bounce off right boundary to hit target. Hint: Aim at the incident point!';
+                    break;
+                case 2:
+                    whiteBall.x = circle.x - R*0.2; whiteBall.y = circle.y - R*0.3;
+                    labTargets.push(createLabTarget(45 * Math.PI/180));
+                    labTargets.push(createLabTarget(135 * Math.PI/180));
+                    msg = lang==='zh'
+                        ? '🎯 Level 2: 一次碰撞后击中两个目标中的一个。选择你的入射点！'
+                        : '🎯 Level 2: Hit one of two targets after one bounce. Choose your incident point!';
+                    break;
+                case 3:
+                    whiteBall.x = circle.x + R*0.3; whiteBall.y = circle.y + R*0.2;
+                    labTargets.push(createLabTarget(270 * Math.PI/180));
+                    msg = lang==='zh'
+                        ? '🎯 Level 3: 需要两次碰撞边界才能击中目标。提示：试试从右侧出发！'
+                        : '🎯 Level 3: Need TWO bounces to reach target. Hint: Try from the right side!';
+                    break;
+                case 4:
+                    whiteBall.x = circle.x - R*0.3; whiteBall.y = circle.y + R*Math.sin(45 * Math.PI/180);
+                    labTargets.push(createLabTarget(45 * Math.PI/180));
+                    msg = lang==='zh'
+                        ? '📐 Level 4: 以45°入射角撞击边界，验证反射角等于入射角！提示：水平瞄准右上边界。'
+                        : '📐 Level 4: Aim for 45° incidence. Verify reflection angle! Hint: Aim horizontally at upper-right boundary.';
+                    break;
+                case 5:
+                    whiteBall.x = circle.x; whiteBall.y = circle.y - R*0.2;
+                    labTargets.push(createLabTarget(Math.random() * Math.PI * 2));
+                    labTargets.push(createLabTarget(Math.random() * Math.PI * 2));
+                    labTargets.push(createLabTarget(Math.random() * Math.PI * 2));
+                    msg = lang==='zh'
+                        ? '🏆 Level 5: 自由设计！一杆击中所有三个目标。'
+                        : '🏆 Level 5: Free design! Hit all three targets in one shot!';
+                    break;
+            }
+            clampInside(whiteBall, ballR);
+            isMoving = false;
+            whiteBall.vx = 0; whiteBall.vy = 0;
+            showTip(msg, 5000);
+            drawCanvas();
+        }
+        document.getElementById('btnLabLevel1').addEventListener('click', () => setupLabLevel(1));
+        document.getElementById('btnLabLevel2').addEventListener('click', () => setupLabLevel(2));
+        document.getElementById('btnLabLevel3').addEventListener('click', () => setupLabLevel(3));
+        document.getElementById('btnLabLevel4').addEventListener('click', () => setupLabLevel(4));
+        document.getElementById('btnLabLevel5').addEventListener('click', () => setupLabLevel(5));
+        document.getElementById('btnLabMirror').addEventListener('click', () => {
+            labProofMode = !labProofMode;
+            showTip(labProofMode ? (lang === 'zh' ? '🪞 镜像证明模式开启' : '🪞 Mirror proof mode on') : (lang === 'zh' ? '🪞 镜像证明模式关闭' : '🪞 Mirror proof mode off'), 1500);
+            drawCanvas();
+        });
+        document.getElementById('btnLabRecord').addEventListener('click', () => {
+            if(currentMode !== 'lab' || !lastCollisionGeom){
+                showTip(lang === 'zh' ? '请先完成一次反射碰撞' : 'Please complete a reflection first', 2000);
+                return;
+            }
+            let inc = lastCollisionGeom.incAngle;
+            let ref = lastCollisionGeom.refAngle;
+            let err = Math.abs(inc - ref);
+            labRecords.push({ inc, ref, err, level: labLevel });
+            updateLabRecordUI();
+            playSound('mode');
+            showTip(lang === 'zh' ? `📝 已记录数据 #${labRecords.length}` : `📝 Recorded #${labRecords.length}`, 1000);
+        });
+        document.getElementById('btnLabCSV').addEventListener('click', () => {
+            if(labRecords.length === 0){
+                showTip(lang === 'zh' ? '暂无数据可导出' : 'No data to export', 1500);
+                return;
+            }
+            let header = lang === 'zh' ? '序号,关卡,入射角(°),反射角(°),误差(°)' : 'Index,Level,Incident(°),Reflected(°),Error(°)';
+            let rows = labRecords.map((r, i) => `${i+1},${r.level},${r.inc.toFixed(2)},${r.ref.toFixed(2)},${r.err.toFixed(2)}`);
+            let csv = [header, ...rows].join('\n');
+            let blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `reflection_lab_records_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showTip(lang === 'zh' ? '📥 CSV 已下载' : '📥 CSV downloaded', 1500);
+        });
+        function updateLabRecordUI(){
+            const list = document.getElementById('labRecordList');
+            const summary = document.getElementById('labRecordSummary');
+            if(labRecords.length === 0){
+                list.innerHTML = `<li>${lang === 'zh' ? '— 暂无记录 —' : '— No records —'}</li>`;
+                summary.innerText = '';
+                return;
+            }
+            list.innerHTML = labRecords.slice(-5).map((r, i) => {
+                let idx = labRecords.length - 5 + i + 1;
+                let status = r.err < 2 ? '✅' : (r.err < 5 ? '⚠️' : '❌');
+                return `<li>${status} ${lang==='zh'?'记录':'Rec'} ${idx}: ${lang==='zh'?'入射':'Inc'}=${r.inc.toFixed(1)}° ${lang==='zh'?'反射':'Ref'}=${r.ref.toFixed(1)}° ${lang==='zh'?'误差':'Err'}=${r.err.toFixed(1)}° ${r.targetHit?'🎯':''}</li>`;
+            }).join('');
+            let avgErr = labRecords.reduce((s, r) => s + r.err, 0) / labRecords.length;
+            let maxErr = Math.max(...labRecords.map(r => r.err));
+            summary.innerHTML = (lang === 'zh'
+                ? `平均误差: ${avgErr.toFixed(2)}° | 最大误差: ${maxErr.toFixed(2)}°<br>${avgErr < 2 ? '✅ 反射定律验证通过' : '⚠️ 误差偏大，检查碰撞点是否准确'}`
+                : `Avg error: ${avgErr.toFixed(2)}° | Max error: ${maxErr.toFixed(2)}°<br>${avgErr < 2 ? '✅ Law verified' : '⚠️ Check collision point accuracy'}`
+            );
+        }
+        
+        // 垂径定理模式工具按钮事件
+        document.getElementById('btnChordThm1').addEventListener('click', () => {
+            chordSubMode = 'perpendicular';
+            chordProofStep = 0;
+            showTip(lang === 'zh' ? '📏 定理1：垂直于弦的直径平分弦' : '📏 Theorem 1: Perpendicular from centre bisects chord', 2000);
+            drawCanvas();
+        });
+        document.getElementById('btnChordThm2').addEventListener('click', () => {
+            chordSubMode = 'bisector';
+            chordProofStep = 0;
+            showTip(lang === 'zh' ? '📏 定理2：平分弦的直径垂直于弦' : '📏 Theorem 2: Line to midpoint is perpendicular', 2000);
+            drawCanvas();
+        });
+        document.getElementById('btnChordSnap').addEventListener('click', () => {
+            chordSnapAssist = !chordSnapAssist;
+            document.getElementById('btnChordSnap').innerText = chordSnapAssist ? (lang === 'zh' ? '🔓 关闭辅助' : '🔓 Unlock') : (lang === 'zh' ? '🔒 垂直辅助' : '🔒 Snap Assist');
+            showTip(chordSnapAssist ? (lang === 'zh' ? '🔒 瞄准方向已锁定为弦的中垂线' : '🔒 Aim locked to perpendicular bisector') : (lang === 'zh' ? '🔓 已解除锁定' : '🔓 Unlocked'), 1500);
+            drawCanvas();
+        });
+        document.getElementById('btnChordAnswer').addEventListener('click', () => {
+            if(currentMode !== 'chord' || !chordForMode) return;
+            chordShowAnswer = !chordShowAnswer;
+            let btn = document.getElementById('btnChordAnswer');
+            btn.innerText = chordShowAnswer ? (lang === 'zh' ? '💡 隐藏答案' : '💡 Hide Answer') : (lang === 'zh' ? '💡 显示答案' : '💡 Show Answer');
+            showTip(chordShowAnswer ? (lang === 'zh' ? '💡 金色虚线为正确路径' : '💡 Golden dashed line shows correct path') : (lang === 'zh' ? '💡 答案已隐藏' : '💡 Answer hidden'), 1500);
+            drawCanvas();
+        });
+        document.getElementById('btnChordRecord').addEventListener('click', () => {
+            if(currentMode !== 'chord' || chordRecords.length === 0){
+                showTip(lang === 'zh' ? '暂无数据可记录' : 'No data to record', 1500);
+                return;
+            }
+            updateChordRecordUI();
+            playSound('mode');
+            showTip(lang === 'zh' ? `📝 已更新记录 (${chordRecords.length} 条)` : `📝 Updated records (${chordRecords.length})`, 1000);
+        });
+        document.getElementById('btnChordCSV').addEventListener('click', () => {
+            if(chordRecords.length === 0){
+                showTip(lang === 'zh' ? '暂无数据可导出' : 'No data to export', 1500);
+                return;
+            }
+            let header = lang === 'zh' ? '序号,关卡,子模式,夹角偏差(°),距圆心(px),垂直,过圆心,结果' : 'Index,Level,SubMode,AngleDev(°),DistToCenter(px),Perp,ThroughCenter,Result';
+            let rows = chordRecords.map((r, i) => `${i+1},${r.level},${r.subMode},${r.angleDev.toFixed(2)},${r.distToCenter.toFixed(2)},${r.perpToChord},${r.throughCenter},${r.success?'Success':'Fail'}`);
+            let csv = [header, ...rows].join('\n');
+            let blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `chord_theorem_records_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showTip(lang === 'zh' ? '📥 CSV 已下载' : '📥 CSV downloaded', 1500);
+        });
+        document.getElementById('btnChordProofNext').addEventListener('click', () => {
+            if(currentMode !== 'chord') return;
+            chordProofStep = (chordProofStep + 1) % 4;
+            document.getElementById('chordProofStepLabel').innerText = lang === 'zh' ? `步骤 ${chordProofStep}/3` : `Step ${chordProofStep}/3`;
+            updateProofBtnText();
+            drawCanvas();
+        });
+        // 垂径定理关卡按钮
+        for(let lv=1; lv<=5; lv++){
+            let btn = document.getElementById('btnChordLevel'+lv);
+            if(btn) btn.addEventListener('click', () => setChordLevel(lv));
+        }
+        function updateChordRecordUI(){
+            const list = document.getElementById('chordRecordList');
+            const summary = document.getElementById('chordRecordSummary');
+            if(chordRecords.length === 0){
+                list.innerHTML = `<li>${lang === 'zh' ? '— 暂无记录 —' : '— No records —'}</li>`;
+                summary.innerText = '';
+                return;
+            }
+            list.innerHTML = chordRecords.slice().reverse().map((r, i) => {
+                let idx = chordRecords.length - i;
+                let status = r.success ? '✅' : '❌';
+                return `<li>${status} ${lang==='zh'?'记录':'Rec'} ${idx}: ${lang==='zh'?'偏差':'Dev'}=${r.angleDev.toFixed(1)}° ${lang==='zh'?'距圆心':'ToCenter'}=${r.distToCenter.toFixed(1)}px</li>`;
+            }).join('');
+            let successCount = chordRecords.filter(r => r.success).length;
+            let rate = (successCount / chordRecords.length * 100).toFixed(0);
+            summary.innerText = (lang === 'zh' ? `成功率: ${rate}% (${successCount}/${chordRecords.length})` : `Success rate: ${rate}% (${successCount}/${chordRecords.length})`);
+        }
+        
+        // 几何标尺功能：添加点和清除点
+        document.getElementById('addPointBtn').addEventListener('click', () => {
+            if(!showRuler){
+                showTip(lang === 'zh' ? '请先启用几何标尺功能' : 'Please enable the ruler function first', 2000);
+                return;
+            }
+            isAddingPoint = !isAddingPoint;
+            showTip(isAddingPoint ? (lang === 'zh' ? '点击画布添加点' : 'Click on canvas to add points') : (lang === 'zh' ? '添加点模式已关闭' : 'Add point mode disabled'), 2000);
+        });
+        
+        document.getElementById('clearPointsBtn').addEventListener('click', () => {
+            if(!showRuler){
+                showTip(lang === 'zh' ? '请先启用几何标尺功能' : 'Please enable the ruler function first', 2000);
+                return;
+            }
+            userPoints = [];
+            drawCanvas();
+            showTip(lang === 'zh' ? '已清除所有点' : 'All points cleared', 1500);
+        });
+        
+        // 点击画布添加点
+        canvas.addEventListener('click', (e) => {
+            if(isAddingPoint && !isMoving && !isReplaying && showRuler){
+                let {x, y} = getCoords(e);
+                // 确保点在圆内
+                let dx = x - circle.x, dy = y - circle.y;
+                let dist = Math.hypot(dx, dy);
+                if(dist <= circle.r){
+                    userPoints.push({x, y});
+                    drawCanvas();
+                    showTip(lang === 'zh' ? `已添加点 ${String.fromCharCode(65 + userPoints.length - 1)}` : `Added point ${String.fromCharCode(65 + userPoints.length - 1)}`, 1000);
+                }
+            }
+        });
+        
+        // 关卡挑战逻辑
+        // 逐帧控制：click 切换模式，dblclick 执行下一帧
+        document.getElementById('stepFrameBtn').addEventListener('click', () => {
+            if(isStepMode){
+                // 退出逐帧模式，继续动画
+                isStepMode = false;
+                document.getElementById('stepFrameBtn').innerHTML = i18n[lang].stepFrameBtn || '⏸️ 逐帧';
+                if(isMoving){
+                    if(animFrame) cancelAnimationFrame(animFrame);
+                    animFrame = requestAnimationFrame(updatePhysics);
+                }
+            } else {
+                // 进入逐帧模式
+                isStepMode = true;
+                document.getElementById('stepFrameBtn').innerHTML = i18n[lang].stepContinueBtn || '▶️ 继续';
+            }
+        });
+        document.getElementById('stepFrameBtn').addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            if(isStepMode && isMoving){
+                updatePhysics();
+                drawCanvas();
+            }
+        });
+        
+
+        
+        function updateModeButtons(){
+            // 更新下拉菜单选中状态
+            let modeSelect = document.getElementById('modeSelect');
+            if(modeSelect) modeSelect.value = currentMode;
+            // 更新快捷按钮激活状态
+            document.querySelectorAll('.mode-shortcuts .shortcut').forEach(btn => {
+                btn.classList.toggle('mode-active', btn.dataset.mode === currentMode);
+            });
+        }
+        
+        function getCoords(e){
+            let rect = canvas.getBoundingClientRect();
+            let sx = canvas.width/rect.width, sy = canvas.height/rect.height;
+            let cx, cy;
+            if(e.touches){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; e.preventDefault(); }
+            else { cx = e.clientX; cy = e.clientY; }
+            return { x: (cx-rect.left)*sx, y: (cy-rect.top)*sy };
+        }
+        
+        function onMouseDown(e){
+            e.preventDefault();
+            if(isMoving || isReplaying) return;
+            let {x,y} = getCoords(e);
+            // 圆周角模式下：点击红球可沿圆周拖拽
+            if(currentMode === 'angle' && Math.hypot(x-targetBall.x, y-targetBall.y) <= targetBall.r+8){
+                isDraggingTarget = true;
+                return;
+            }
+            // 反射定律实验室：点击目标点可沿圆周拖拽
+            if(currentMode === 'lab'){
+                for(let t of labTargets){
+                    if(!t.hit && Math.hypot(x - t.x, y - t.y) <= 14){
+                        t.dragging = true;
+                        return;
+                    }
+                }
+            }
+            // 垂径定理 Level 5：点击弦端点 C/D 可拖拽
+            if(currentMode === 'chord' && chordLevel === 5 && chordForMode){
+                if(Math.hypot(x - chordForMode.p1.x, y - chordForMode.p1.y) <= 12){
+                    chordDragWhich = 'C';
+                    return;
+                }
+                if(Math.hypot(x - chordForMode.p2.x, y - chordForMode.p2.y) <= 12){
+                    chordDragWhich = 'D';
+                    return;
+                }
+            }
+            if(Math.hypot(x-whiteBall.x, y-whiteBall.y) <= ballR+5){
+                isAiming = true;
+                aimEnd = {x:whiteBall.x, y:whiteBall.y};
+                drawCanvas();
+            }
+        }
+        function onMouseMove(e){
+            if(isDraggingTarget && currentMode === 'angle'){
+                e.preventDefault();
+                let {x,y} = getCoords(e);
+                let dx = x - circle.x, dy = y - circle.y;
+                let ang = Math.atan2(dy, dx);
+                targetBall.x = circle.x + (R - targetBall.r - 2) * Math.cos(ang);
+                targetBall.y = circle.y + (R - targetBall.r - 2) * Math.sin(ang);
+                drawCanvas();
+                return;
+            }
+            if(currentMode === 'lab'){
+                let draggingTarget = labTargets.find(t => t.dragging);
+                if(draggingTarget){
+                    e.preventDefault();
+                    let {x,y} = getCoords(e);
+                    let dx = x - circle.x, dy = y - circle.y;
+                    draggingTarget.angle = Math.atan2(dy, dx);
+                    draggingTarget.x = circle.x + (R + 15) * Math.cos(draggingTarget.angle);
+                    draggingTarget.y = circle.y + (R + 15) * Math.sin(draggingTarget.angle);
+                    drawCanvas();
+                    return;
+                }
+            }
+            // 垂径定理 Level 5：拖拽弦端点
+            if(currentMode === 'chord' && chordDragWhich && chordForMode){
+                e.preventDefault();
+                let {x,y} = getCoords(e);
+                let dx = x - circle.x, dy = y - circle.y;
+                let dist = Math.hypot(dx, dy);
+                let ang = Math.atan2(dy, dx);
+                // 约束在圆周上
+                let bx = circle.x + R * Math.cos(ang);
+                let by = circle.y + R * Math.sin(ang);
+                if(chordDragWhich === 'C'){
+                    chordForMode.p1.x = bx; chordForMode.p1.y = by;
+                } else {
+                    chordForMode.p2.x = bx; chordForMode.p2.y = by;
+                }
+                // 重新计算中点、斜率、长度
+                let mx = (chordForMode.p1.x + chordForMode.p2.x)/2;
+                let my = (chordForMode.p1.y + chordForMode.p2.y)/2;
+                chordForMode.mid = {x: mx, y: my};
+                chordForMode.slope = Math.atan2(chordForMode.p2.y - chordForMode.p1.y, chordForMode.p2.x - chordForMode.p1.x);
+                chordForMode.length = Math.hypot(chordForMode.p2.x - chordForMode.p1.x, chordForMode.p2.y - chordForMode.p1.y);
+                chordForMode.distToCenter = Math.hypot(mx - circle.x, my - circle.y);
+                targetBall.x = mx; targetBall.y = my;
+                drawCanvas();
+                return;
+            }
+            if(!isAiming || isReplaying) return;
+            e.preventDefault();
+            let {x,y} = getCoords(e);
+            let dx = x-whiteBall.x, dy = y-whiteBall.y;
+            let len = Math.hypot(dx,dy);
+            if(len>120){ x = whiteBall.x + dx/len*120; y = whiteBall.y + dy/len*120; }
+            // 垂径定理：垂直辅助锁定瞄准方向
+            if(currentMode === 'chord' && chordSnapAssist && chordForMode && len > 2){
+                let perpDir = chordForMode.slope + Math.PI/2;
+                let aimDir = Math.atan2(dy, dx);
+                let diff1 = Math.abs(aimDir - perpDir);
+                let diff2 = Math.abs(aimDir - (perpDir + Math.PI));
+                while(diff1 > Math.PI) diff1 -= 2*Math.PI; while(diff1 < 0) diff1 = -diff1;
+                while(diff2 > Math.PI) diff2 -= 2*Math.PI; while(diff2 < 0) diff2 = -diff2;
+                let snapDir = diff1 < diff2 ? perpDir : perpDir + Math.PI;
+                x = whiteBall.x + Math.cos(snapDir) * len;
+                y = whiteBall.y + Math.sin(snapDir) * len;
+            }
+            aimEnd = {x,y};
+            drawCanvas();
+        }
+        function onMouseUp(e){
+            if(isDraggingTarget && currentMode === 'angle'){
+                isDraggingTarget = false;
+                // 半圆直角挑战：检测圆周角是否约等于 90°
+                if(angleSubMode === 'semicircle' && angleModePoints.A && angleModePoints.B){
+                    let P = { x: targetBall.x, y: targetBall.y };
+                    let incAngle = computeInscribedAngle(angleModePoints.A, angleModePoints.B, P);
+                    if(Math.abs(incAngle - 90) < 3){
+                        score += 10;
+                        scoreSpan.innerText = score;
+                        playSound('score');
+                        showTip(lang === 'zh' ? '✅ 半圆上的圆周角是直角！' : '✅ Angle in a semicircle is 90°!', 2000);
+                        showTip(`📜 ${lang === 'zh' ? '半圆上的圆周角是直角' : 'The angle in a semicircle is a right angle'}`, 3000);
+                        // 成功特效
+                        tangentSuccessEffect = { active: true, timer: 120, point: {x: targetBall.x, y: targetBall.y}, targetCenter: {x: circle.x, y: circle.y}, velDir: 0 };
+                        if(!achievements.semicircleVerifier) unlockAchievement('semicircleVerifier');
+                    } else {
+                        showTip(lang === 'zh' ? `❌ 当前圆周角 ${incAngle.toFixed(1)}°，未达到 90°` : `❌ Current angle ${incAngle.toFixed(1)}°, not 90°`, 2000);
+                    }
+                }
+                drawCanvas();
+                return;
+            }
+            if(currentMode === 'lab'){
+                for(let t of labTargets){
+                    if(t.dragging){
+                        t.dragging = false;
+                        drawCanvas();
+                        return;
+                    }
+                }
+            }
+            if(currentMode === 'chord' && chordDragWhich){
+                chordDragWhich = null;
+                drawCanvas();
+                return;
+            }
+            if(!isAiming || isReplaying) return;
+            e.preventDefault();
+            let dx = aimEnd.x - whiteBall.x, dy = aimEnd.y - whiteBall.y;
+            let len = Math.hypot(dx,dy);
+            if(len>2){
+                let power = computePowerFromDrag(len);
+                let vx = dx/len * power, vy = dy/len * power;
+                chordShowAnswer = false;
+                let ansBtn = document.getElementById('btnChordAnswer');
+                if(ansBtn) ansBtn.innerText = lang === 'zh' ? '💡 显示答案' : '💡 Show Answer';
+                shoot(vx, vy);
+            }
+            isAiming = false;
+            drawCanvas();
+        }
+        
+        canvas.addEventListener('mousedown', onMouseDown);
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+        canvas.addEventListener('touchstart', onMouseDown, {passive:false});
+        window.addEventListener('touchmove', onMouseMove, {passive:false});
+        window.addEventListener('touchend', onMouseUp);
+        
+        // 下拉菜单切换模式
+        document.getElementById('modeSelect').onchange = (e)=>setMode(e.target.value);
+        // 快捷按钮切换模式
+        document.querySelectorAll('.mode-shortcuts .shortcut').forEach(btn => {
+            btn.onclick = ()=>setMode(btn.dataset.mode);
+        });
+        document.getElementById('resetBtn').onclick = ()=>{ resetGame(); drawCanvas(); };
+        document.getElementById('undoBtn').onclick = undo;
+        document.getElementById('replayBtn').onclick = startReplay;
+        
+        speedSlider.oninput = (e)=>{ speedFactor = parseFloat(e.target.value); speedVal.innerText = speedFactor.toFixed(2)+'x'; };
+        
+        // 移动端辅助力度调节
+        let mobilePower = 0.8;
+        mobilePowerSlider.oninput = (e)=>{
+            mobilePower = parseInt(e.target.value) / 100;
+            mobilePowerVal.innerText = Math.floor(mobilePower*100)+'%';
+        };
+        let dirAngleRad = 0;
+        document.getElementById('dirUp').onclick = ()=>{ dirAngleRad = -Math.PI/2; };
+        document.getElementById('dirDown').onclick = ()=>{ dirAngleRad = Math.PI/2; };
+        document.getElementById('dirLeft').onclick = ()=>{ dirAngleRad = Math.PI; };
+        document.getElementById('dirRight').onclick = ()=>{ dirAngleRad = 0; };
+        document.getElementById('dirShoot').onclick = ()=>{
+            if(isMoving) return;
+            let vx = Math.cos(dirAngleRad) * 12 * mobilePower;
+            let vy = Math.sin(dirAngleRad) * 12 * mobilePower;
+            shoot(vx, vy);
+        };
+        
+        // 移动端角度微调
+        document.getElementById('angleMinus5').onclick = ()=>{ dirAngleRad -= 5 * Math.PI/180; };
+        document.getElementById('angleMinus1').onclick = ()=>{ dirAngleRad -= 1 * Math.PI/180; };
+        document.getElementById('anglePlus1').onclick = ()=>{ dirAngleRad += 1 * Math.PI/180; };
+        document.getElementById('anglePlus5').onclick = ()=>{ dirAngleRad += 5 * Math.PI/180; };
+        
+        // 移动端力度微调
+        function adjustMobilePower(delta){
+            let slider = document.getElementById('mobilePowerSlider');
+            let newVal = parseInt(slider.value) + delta;
+            newVal = Math.max(0, Math.min(100, newVal));
+            slider.value = newVal;
+            mobilePower = newVal / 100;
+            mobilePowerVal.innerText = newVal + '%';
+        }
+        document.getElementById('powerMinus5').onclick = ()=> adjustMobilePower(-5);
+        document.getElementById('powerMinus1').onclick = ()=> adjustMobilePower(-1);
+        document.getElementById('powerPlus1').onclick = ()=> adjustMobilePower(1);
+        document.getElementById('powerPlus5').onclick = ()=> adjustMobilePower(5);
+        
+        // 移动端一键镜像瞄准
+        document.getElementById('mirrorAim').onclick = ()=>{
+            if(currentMode !== 'lab' || labTargets.length === 0) return;
+            let target = labTargets.find(t => !t.hit);
+            if(!target) return;
+            // 计算镜像点（关于过目标点的切线对称）
+            let tx = target.x - circle.x, ty = target.y - circle.y;
+            let tLen = Math.hypot(tx, ty);
+            let tangentX = -ty/tLen, tangentY = tx/tLen;
+            let toTx = target.x - whiteBall.x, toTy = target.y - whiteBall.y;
+            let dot = toTx * tangentX + toTy * tangentY;
+            let mirrorX = target.x - 2*dot*tangentX;
+            let mirrorY = target.y - 2*dot*tangentY;
+            dirAngleRad = Math.atan2(mirrorY - whiteBall.y, mirrorX - whiteBall.x);
+            showTip(lang==='zh'?'🪞 已自动瞄准镜像点，点击击球！':'🪞 Aimed at mirror point, click Shoot!', 2000);
+        };
+        
+        let isDark = false;
+        document.getElementById('themeBtn').onclick = ()=>{
+            isDark = !isDark;
+            document.body.classList.toggle('dark-mode', isDark);
+            document.body.classList.remove('light-mode');
+            if(!isDark) document.body.classList.add('light-mode');
+            drawCanvas();
+        };
+        
+        document.getElementById('langBtn').onclick = ()=>{
+            lang = lang === 'zh' ? 'en' : 'zh';
+            updateLanguage();
+            drawCanvas();
+        };
+        
+        document.getElementById('soundToggleBtn').onclick = ()=>{
+            soundEnabled = !soundEnabled;
+            const t = i18n[lang];
+            document.getElementById('soundToggleBtn').innerHTML = soundEnabled ? t.soundOn : t.soundOff;
+            if(soundEnabled && !audioCtx) initAudio();
+        };
+        
+        const rulesModal = document.getElementById('rulesModal');
+        const rulesBtn = document.getElementById('rulesBtn');
+        const closeRulesBtn = document.getElementById('closeRulesBtn');
+        rulesBtn.onclick = () => { rulesModal.style.display = 'flex'; };
+        closeRulesBtn.onclick = () => { rulesModal.style.display = 'none'; };
+        window.onclick = (e) => { if(e.target === rulesModal) rulesModal.style.display = 'none'; };
+        
+        document.getElementById('helpBtn').onclick = ()=>{
+            // 切线狙击模式下点击帮助，重置为教学位形
+            if(currentMode === 'tangent'){
+                targetBall.x = circle.x + R * 0.55;
+                targetBall.y = circle.y;
+                whiteBall.x = circle.x - R * 0.25;
+                whiteBall.y = circle.y - R * 0.35;
+                clampInside(whiteBall, ballR);
+                clampInside(targetBall, targetBall.r);
+                drawCanvas();
+                showTip(lang === 'zh' ? '📐 已重置为切线教学位形，对准青色虚线射击！' : '📐 Reset to tangent teaching position, aim along cyan dashed lines!', 3000);
+            }
+            let modal = document.createElement('div');
+            modal.style.position = 'fixed'; modal.style.top='0'; modal.style.left='0'; modal.style.width='100%'; modal.style.height='100%';
+            modal.style.background='rgba(0,0,0,0.7)'; modal.style.display='flex'; modal.style.justifyContent='center'; modal.style.alignItems='center'; modal.style.zIndex='2000';
+            let content = document.createElement('div');
+            content.style.background='white'; content.style.padding='20px'; content.style.borderRadius='24px'; content.style.maxWidth='500px';
+            const t = i18n[lang];
+            content.innerHTML = `<h3>${t.helpText}</h3><p>${t.ruleFree}<br><br>${t.ruleReflect1}<br><br>${t.ruleTangent}<br><br>${t.ruleAngle}<br><br>${t.ruleChord}<br><br>${t.ruleLab}</p><button id="closeModalBtn" style="margin-top:15px;padding:8px 20px;">${lang === 'zh' ? '关闭' : 'Close'}</button>`;
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            document.getElementById('closeModalBtn').onclick = ()=>modal.remove();
+        };
+        
+        // 初始化音效 (首次触摸)
+        document.body.addEventListener('touchstart', ()=>{ initAudio(); }, { once: true });
+        canvas.addEventListener('mousedown', ()=>{ if(!audioCtx && soundEnabled) initAudio(); });
+        
+        updateAchievementsUI();
+        
+        updateLanguage();
+        resetGame();
+        drawCanvas();
+        
+        // 新手指引（内存变量，刷新后重置）
+        if(!window.tutorialShown){
+            window.tutorialShown = true;
+            setTimeout(() => {
+                showTip(lang==='zh' 
+                    ? '👋 欢迎！点击白球并拖拽来瞄准，松开后击球。试试击中红球得分！' 
+                    : '👋 Welcome! Click and drag the white ball to aim, release to shoot. Try hitting the red ball!', 6000);
+            }, 1000);
+        }
+    })();
